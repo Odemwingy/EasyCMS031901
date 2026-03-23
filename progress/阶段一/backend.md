@@ -10,8 +10,8 @@
 
 | 状态 | 项 |
 |------|----|
-| 已完成 | |
-| 待完成 | 后端项目脚手架初始化（`app/backend/`，Laravel 10） |
+| 已完成 | 后端项目脚手架初始化（`app/backend/`，Laravel 10） |
+| 已完成 | 基于 Podman 的本地开发环境初始化（PHP-FPM、Nginx、MySQL、Redis） |
 | 待完成 | 数据库 Schema：User、Role、Permission、Menu、AuditLog |
 | 待完成 | Sanctum Bearer Token 鉴权（登录签发 Token、请求校验 Token） |
 | 待完成 | 认证 API：`POST /api/v1/auth/login`、`POST /api/v1/auth/logout`、`POST /api/v1/auth/change-password`、`GET /api/v1/auth/me`、`GET /api/v1/auth/menus` |
@@ -21,7 +21,14 @@
 | 待完成 | 权限配置 API：`PUT /api/v1/admin/roles/{id}/permissions` |
 | 待完成 | 审计日志列表与详情 API：`/api/v1/admin/audit-logs` |
 | 待完成 | 接口级权限拦截与只读角色策略 |
-| 存在问题 | 代码尚未开始，但需求、技术架构和接口基线已明确；当前应严格以 `technology/API_SPEC.md` 为准，不再使用旧的 JWT / `/api/auth/*` 口径 |
+| 存在问题 | 当前 `podman compose` 通过外部 `docker-compose.exe` 兼容层运行；本地开发可用，但后续若要长期维护，建议补一份明确的 Podman 使用说明 |
+
+## 本次更新
+
+- 2026-03-23：在 `app/backend/` 初始化 Laravel 10 工程。
+- 2026-03-23：新增 `docker-compose.yml`、Nginx 配置、本地 PHP 配置，并切换为 Podman 本地镜像运行。
+- 2026-03-23：确认本地服务端口为 `7050(MySQL)`、`7051(Nginx/API)`、`7052(Redis)`。
+- 2026-03-23：修复 Windows 挂载目录权限问题，改用 named volume 托管 `storage/` 与 `bootstrap/cache/`，Laravel 首页可正常返回 `200`。
 
 ---
 
