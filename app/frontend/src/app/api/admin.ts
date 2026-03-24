@@ -116,6 +116,30 @@ export interface MenuTreeItem {
   children: MenuTreeItem[];
 }
 
+export interface CreateMenuPayload {
+  parent_id?: number | null;
+  type: number;
+  name: string;
+  permission: string;
+  route_path?: string;
+  component?: string;
+  icon?: string;
+  sort: number;
+  status: number;
+  remark?: string;
+}
+
+export interface UpdateMenuPayload {
+  parent_id?: number | null;
+  name: string;
+  route_path?: string;
+  component?: string;
+  icon?: string;
+  sort: number;
+  status: number;
+  remark?: string;
+}
+
 export interface AuditLogItem {
   id: number;
   log_type: string;
@@ -222,6 +246,33 @@ export async function updateRoleStatus(id: number, status: number) {
 export async function getMenuTree(includeDisabled = false) {
   return httpRequest<MenuTreeItem[]>("/api/v1/admin/menus/tree", {
     query: { include_disabled: includeDisabled },
+  });
+}
+
+export async function createMenu(payload: CreateMenuPayload) {
+  return httpRequest<{ id: number; name: string; permission: string; created_at: string }>("/api/v1/admin/menus", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateMenu(id: number, payload: UpdateMenuPayload) {
+  return httpRequest<null>(`/api/v1/admin/menus/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateMenuStatus(id: number, status: number) {
+  return httpRequest<{ affected_count: number }>(`/api/v1/admin/menus/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function deleteMenu(id: number) {
+  return httpRequest<null>(`/api/v1/admin/menus/${id}`, {
+    method: "DELETE",
   });
 }
 

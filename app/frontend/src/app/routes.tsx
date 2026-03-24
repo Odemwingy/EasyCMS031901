@@ -6,6 +6,7 @@ import UserDetail from "./pages/UserDetail";
 import RoleManagement from "./pages/RoleManagement";
 import RoleDetail from "./pages/RoleDetail";
 import PermissionConfig from "./pages/PermissionConfig";
+import MenuManagement from "./pages/MenuManagement";
 import AuditLog from "./pages/AuditLog";
 import NotificationConfig from "./pages/NotificationConfig";
 import SystemParams from "./pages/SystemParams";
@@ -43,6 +44,7 @@ export const router = createBrowserRouter([
       { path: "roles", Component: RoleManagement },
       { path: "roles/:id", Component: RoleDetail },
       { path: "permissions", Component: PermissionConfig },
+      { path: "menus", Component: MenuManagement },
       { path: "audit-log", Component: AuditLog },
       { path: "notifications", Component: NotificationConfig },
       { path: "system-params", Component: SystemParams },

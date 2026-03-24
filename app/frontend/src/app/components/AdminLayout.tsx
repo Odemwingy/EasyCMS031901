@@ -4,6 +4,7 @@ import {
   Users,
   Shield,
   Key,
+  ListTree,
   FileText,
   Bell,
   Settings,
@@ -32,6 +33,7 @@ const defaultMenuItems = [
   { path: "/users", label: "用户管理", icon: Users },
   { path: "/roles", label: "角色管理", icon: Shield },
   { path: "/permissions", label: "权限配置", icon: Key },
+  { path: "/menus", label: "菜单管理", icon: ListTree },
   { path: "/audit-log", label: "审计日志", icon: FileText },
   { path: "/notifications", label: "通知配置", icon: Bell },
   { path: "/system-params", label: "系统参数", icon: Settings },
@@ -53,6 +55,7 @@ const pathLabelMap: Record<string, string> = {
   users: "用户管理",
   roles: "角色管理",
   permissions: "权限配置",
+  menus: "菜单管理",
   "audit-log": "审计日志",
   notifications: "通知配置",
   "system-params": "系统参数",
@@ -102,6 +105,7 @@ export default function AdminLayout() {
     return defaultMenuItems.filter(
       (item) =>
         allowedMenuPaths.includes(item.path) ||
+        item.path === "/menus" ||
         item.path === "/notifications" ||
         item.path === "/system-params",
     );
