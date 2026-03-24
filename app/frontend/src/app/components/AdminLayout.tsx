@@ -239,12 +239,12 @@ export default function AdminLayout() {
             </form>
           </div>
 
-          {/* 页面内容 */}
-          <ScrollArea className="flex-1 bg-[#f5f5f5]">
+          {/* 页面内容：flex 子项必须 min-h-0，否则高度随内容撑开、无法出现滚动条 */}
+          <div className="flex-1 min-h-0 overflow-y-auto bg-[#f5f5f5]">
             <div className="p-6">
               <Outlet />
             </div>
-          </ScrollArea>
+          </div>
         </div>
       </div>
     </div>
