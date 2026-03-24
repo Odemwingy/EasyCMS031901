@@ -44,45 +44,47 @@
 
 ## 角色进度明细（阶段一）
 
+> 状态颜色说明：<span style="background-color:#f6ffed; color:#389e0d; padding:2px 8px; border-radius:4px;">已完成</span> · <span style="background-color:#fffbe6; color:#d48806; padding:2px 8px; border-radius:4px;">待完成</span>
+
 ### 前端
 
 | 状态 | 项 |
 |------|----|
-| 已完成 | Vite + React 18 + TypeScript 脚手架初始化（`app/frontend/`） |
-| 已完成 | TailwindCSS 4 + shadcn/ui 组件库接入 |
-| 已完成 | React Router 7 路由配置 |
-| 已完成 | AdminLayout 与后台管理核心页面原型（用户/角色/权限/审计） |
-| 待完成 | 登录 / 登出 / 路由守卫与登录态完善 |
-| 待完成 | 对接 `/api/v1/auth/*`、`/api/v1/admin/users`、`/api/v1/admin/roles`、`/api/v1/admin/menus/tree`、`/api/v1/admin/audit-logs` |
-| 待完成 | 基于 `auth/menus` 完成菜单与按钮权限控制 |
+| <span style="background-color:#f6ffed; color:#389e0d; padding:2px 8px; border-radius:4px;">已完成</span> | Vite + React 18 + TypeScript 脚手架初始化（`app/frontend/`） |
+| <span style="background-color:#f6ffed; color:#389e0d; padding:2px 8px; border-radius:4px;">已完成</span> | TailwindCSS 4 + shadcn/ui 组件库接入 |
+| <span style="background-color:#f6ffed; color:#389e0d; padding:2px 8px; border-radius:4px;">已完成</span> | React Router 7 路由配置 |
+| <span style="background-color:#f6ffed; color:#389e0d; padding:2px 8px; border-radius:4px;">已完成</span> | AdminLayout 与后台管理核心页面原型（用户/角色/权限/审计） |
+| <span style="background-color:#fffbe6; color:#d48806; padding:2px 8px; border-radius:4px;">待完成</span> | 登录 / 登出 / 路由守卫与登录态完善 |
+| <span style="background-color:#fffbe6; color:#d48806; padding:2px 8px; border-radius:4px;">待完成</span> | 对接 `/api/v1/auth/*`、`/api/v1/admin/users`、`/api/v1/admin/roles`、`/api/v1/admin/menus/tree`、`/api/v1/admin/audit-logs` |
+| <span style="background-color:#fffbe6; color:#d48806; padding:2px 8px; border-radius:4px;">待完成</span> | 基于 `auth/menus` 完成菜单与按钮权限控制 |
 
 ### 后端
 
 | 状态 | 项 |
 |------|----|
-| 已完成 | 后端脚手架初始化（`app/backend/`，Laravel 10） |
-| 已完成 | Podman 本地环境初始化（PHP-FPM、Nginx、MySQL、Redis） |
-| 待完成 | 数据库 Schema：User、Role、Permission、Menu、AuditLog |
-| 待完成 | Sanctum Bearer Token 鉴权链路 |
-| 待完成 | 认证 API：`/api/v1/auth/login`、`/api/v1/auth/logout`、`/api/v1/auth/change-password`、`/api/v1/auth/me`、`/api/v1/auth/menus` |
-| 待完成 | 用户/角色/菜单/审计日志 API 与权限拦截 |
+| <span style="background-color:#f6ffed; color:#389e0d; padding:2px 8px; border-radius:4px;">已完成</span> | 后端脚手架初始化（`app/backend/`，Laravel 10） |
+| <span style="background-color:#f6ffed; color:#389e0d; padding:2px 8px; border-radius:4px;">已完成</span> | Podman 本地环境初始化（PHP-FPM、Nginx、MySQL、Redis） |
+| <span style="background-color:#fffbe6; color:#d48806; padding:2px 8px; border-radius:4px;">待完成</span> | 数据库 Schema：User、Role、Permission、Menu、AuditLog |
+| <span style="background-color:#fffbe6; color:#d48806; padding:2px 8px; border-radius:4px;">待完成</span> | Sanctum Bearer Token 鉴权链路 |
+| <span style="background-color:#fffbe6; color:#d48806; padding:2px 8px; border-radius:4px;">待完成</span> | 认证 API：`/api/v1/auth/login`、`/api/v1/auth/logout`、`/api/v1/auth/change-password`、`/api/v1/auth/me`、`/api/v1/auth/menus` |
+| <span style="background-color:#fffbe6; color:#d48806; padding:2px 8px; border-radius:4px;">待完成</span> | 用户/角色/菜单/审计日志 API 与权限拦截 |
 
 ### UI 设计
 
 | 状态 | 项 |
 |------|----|
-| 已完成 | 后台管理模块设计稿（布局、用户、角色、权限、审计、通知、系统参数） |
-| 待完成 | 登录页设计稿 |
-| 待完成 | 登出/会话过期提示设计稿 |
+| <span style="background-color:#f6ffed; color:#389e0d; padding:2px 8px; border-radius:4px;">已完成</span> | 后台管理模块设计稿（布局、用户、角色、权限、审计、通知、系统参数） |
+| <span style="background-color:#fffbe6; color:#d48806; padding:2px 8px; border-radius:4px;">待完成</span> | 登录页设计稿 |
+| <span style="background-color:#fffbe6; color:#d48806; padding:2px 8px; border-radius:4px;">待完成</span> | 登出/会话过期提示设计稿 |
 
 ### 测试
 
 | 状态 | 项 |
 |------|----|
-| 待完成 | 登录/登出流程 E2E |
-| 待完成 | Bearer Token 鉴权与权限拦截测试 |
-| 待完成 | 用户 / 角色 / 菜单 / 审计日志接口测试 |
-| 待完成 | 前端路由守卫与按钮级权限显隐测试 |
+| <span style="background-color:#fffbe6; color:#d48806; padding:2px 8px; border-radius:4px;">待完成</span> | 登录/登出流程 E2E |
+| <span style="background-color:#fffbe6; color:#d48806; padding:2px 8px; border-radius:4px;">待完成</span> | Bearer Token 鉴权与权限拦截测试 |
+| <span style="background-color:#fffbe6; color:#d48806; padding:2px 8px; border-radius:4px;">待完成</span> | 用户 / 角色 / 菜单 / 审计日志接口测试 |
+| <span style="background-color:#fffbe6; color:#d48806; padding:2px 8px; border-radius:4px;">待完成</span> | 前端路由守卫与按钮级权限显隐测试 |
 
 ---
 
