@@ -14,6 +14,25 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    private const PERMISSION_ALIASES = [
+        'admin:users:edit' => ['admin:users:update'],
+        'admin:users:update' => ['admin:users:edit'],
+        'admin:users:toggle-status' => ['admin:users:change-status'],
+        'admin:users:change-status' => ['admin:users:toggle-status'],
+        'admin:users:reset-password' => ['admin:users:update'],
+        'admin:roles:edit' => ['admin:roles:update'],
+        'admin:roles:update' => ['admin:roles:edit'],
+        'admin:roles:toggle-status' => ['admin:roles:change-status'],
+        'admin:roles:change-status' => ['admin:roles:toggle-status'],
+        'admin:roles:create' => ['admin:roles:copy'],
+        'admin:roles:copy' => ['admin:roles:create'],
+        'admin:roles:assign-permissions' => ['admin:roles:list'],
+        'admin:menus:edit' => ['admin:menus:update'],
+        'admin:menus:update' => ['admin:menus:edit'],
+        'admin:menus:toggle-status' => ['admin:menus:change-status'],
+        'admin:menus:change-status' => ['admin:menus:toggle-status'],
+    ];
+
     protected $fillable = [
         'name',
         'username',
@@ -83,7 +102,19 @@ class User extends Authenticatable
 
     public function hasPermission(string $permission): bool
     {
-        return $this->isSuperAdmin() || in_array($permission, $this->permissionCodes(), true);
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        $ownedPermissions = $this->permissionCodes();
+
+        foreach ($this->permissionVariants($permission) as $candidate) {
+            if (in_array($candidate, $ownedPermissions, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function hasReadonlyRole(): bool
@@ -110,5 +141,13 @@ class User extends Authenticatable
         return $roles
             ->filter(fn (Role $role): bool => $role->status === 1)
             ->values();
+    }
+
+    private function permissionVariants(string $permission): array
+    {
+        return array_values(array_unique([
+            $permission,
+            ...(self::PERMISSION_ALIASES[$permission] ?? []),
+        ]));
     }
 }

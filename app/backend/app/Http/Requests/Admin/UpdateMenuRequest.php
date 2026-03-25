@@ -18,9 +18,9 @@ class UpdateMenuRequest extends FormRequest
 
         return [
             'parent_id' => ['nullable', 'integer', 'different:id', Rule::exists('menus', 'id')],
-            'type' => ['required', 'integer', 'in:1,2,3'],
+            'type' => ['nullable', 'integer', 'in:1,2,3'],
             'name' => ['required', 'string', 'max:50'],
-            'permission' => ['required', 'string', 'max:100', Rule::unique('menus', 'permission')->ignore($menuId)],
+            'permission' => ['nullable', 'string', 'max:100', Rule::unique('menus', 'permission')->ignore($menuId)],
             'route_path' => ['nullable', 'string', 'max:200'],
             'component' => ['nullable', 'string', 'max:200'],
             'icon' => ['nullable', 'string', 'max:50'],

@@ -16,7 +16,11 @@ class RoleDetailResource extends JsonResource
             'name' => $this->name,
             'code' => $this->code,
             'description' => $this->description,
-            'data_scope' => $this->data_scope,
+            'data_scope' => match ($this->data_scope) {
+                'org' => 2,
+                'project' => 3,
+                default => 1,
+            },
             'data_scope_label' => match ($this->data_scope) {
                 'org' => '组织级',
                 'project' => '项目级',
@@ -27,6 +31,7 @@ class RoleDetailResource extends JsonResource
             'is_system_preset' => (bool) $this->is_system_preset,
             'is_readonly' => (bool) $this->is_readonly,
             'user_count' => (int) ($this->users_count ?? $this->users?->count() ?? 0),
+            'created_at' => optional($this->created_at)?->toIso8601String(),
             'updated_at' => optional($this->updated_at)?->toIso8601String(),
             'module_permissions' => $menus->where('type', 1)->pluck('name')->values()->all(),
             'page_permissions' => $menus->where('type', 2)->pluck('name')->values()->all(),

@@ -27,7 +27,7 @@
 | 领域 | 状态 | 一句话进展 |
 |------|------|------------|
 | 前端 | 🟡 进行中 | 页面已成型，核心接口联调推进中 |
-| 后端 | 🟡 进行中 | Laravel 与本地环境已完成，业务 API 开发中 |
+| 后端 | 🟡 进行中 | Laravel、本地环境、认证链路与用户/角色/菜单/审计日志一期核心接口已完成，正在收口权限与审计覆盖 |
 | UI 设计 | 🟡 进行中 | 后台管理设计稿已交付，登录/会话提示待补 |
 | 测试 | ⚪ 未开始 | 依赖前后端联调完成后启动 |
 
@@ -71,10 +71,11 @@
 |------|----|
 | 已完成 | 后端脚手架初始化（`app/backend/`，Laravel 10） |
 | 已完成 | Podman 本地环境初始化（PHP-FPM、Nginx、MySQL、Redis） |
-| 待完成 | 数据库 Schema：User、Role、Permission、Menu、AuditLog |
-| 待完成 | Sanctum Bearer Token 鉴权链路 |
-| 待完成 | 认证 API：`/api/v1/auth/login`、`/api/v1/auth/logout`、`/api/v1/auth/change-password`、`/api/v1/auth/me`、`/api/v1/auth/menus` |
-| 待完成 | 用户/角色/菜单/审计日志 API 与权限拦截 |
+| 已完成 | 核心数据结构：`users` 增强、`roles`、`menus`、`user_roles`、`user_projects`、`role_menu_permissions`、`audit_logs` |
+| 已完成 | Sanctum Bearer Token 鉴权链路 |
+| 已完成 | 认证 API：`/api/v1/auth/login`、`/api/v1/auth/logout`、`/api/v1/auth/change-password`、`/api/v1/auth/me`、`/api/v1/auth/menus` |
+| 已完成 | 用户/角色/菜单/审计日志一期核心接口与基础权限拦截 |
+| 进行中 | 审计日志写入覆盖、异常语义统一、自动化测试补齐 |
 
 ### UI 设计
 
@@ -102,3 +103,4 @@
 | 阶段一 | 2026-03-20 | 初始化 |
 | 阶段一 | 2026-03-23 | 同步阶段一需求、接口与技术架构文档，明确后台管理一期范围 |
 | 阶段一 | 2026-03-23 | 完成 `app/backend/` Laravel 脚手架与 Podman 本地环境初始化 |
+| 阶段一 | 2026-03-24 | 完成认证、用户、角色、菜单、权限配置、审计日志查询等后端一期核心接口 |

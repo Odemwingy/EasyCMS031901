@@ -42,7 +42,7 @@ class AuditLogListResource extends JsonResource
     private function actionLabel(): string
     {
         return match ($this->action) {
-            'create' => '创建',
+            'create' => '新建',
             'edit' => '编辑',
             'toggle-status' => '切换状态',
             'reset-password' => '重置密码',
@@ -50,6 +50,7 @@ class AuditLogListResource extends JsonResource
             'unlock' => '解锁',
             'copy' => '复制',
             'assign-permissions' => '配置权限',
+            'delete' => '删除',
             'login' => '登录',
             default => $this->action,
         };

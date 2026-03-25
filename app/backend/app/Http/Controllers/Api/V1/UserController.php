@@ -118,7 +118,12 @@ class UserController extends Controller
 
         return $this->success([
             'id' => $user->id,
-        ]);
+            'username' => $user->username,
+            'name' => $user->name,
+            'status' => $user->status,
+            'status_label' => $user->status === 1 ? '启用' : '停用',
+            'created_at' => optional($user->created_at)?->toIso8601String(),
+        ], '用户创建成功');
     }
 
     public function update(UpdateUserRequest $request, int $id): JsonResponse
@@ -160,9 +165,7 @@ class UserController extends Controller
             UserResource::make($user)->resolve()
         );
 
-        return $this->success([
-            'id' => $user->id,
-        ]);
+        return $this->success(UserResource::make($user), '用户信息已更新');
     }
 
     public function updateStatus(UpdateUserStatusRequest $request, int $id): JsonResponse
@@ -173,6 +176,19 @@ class UserController extends Controller
         $targetStatus = $request->integer('status');
 
         if ($targetStatus === 2 && $this->isLastSystemAdmin($user)) {
+            $this->writeAuditLog(
+                'admin_user_status_change',
+                $operator,
+                'toggle-status',
+                2,
+                '系统至少需要保留一个启用状态的系统管理员账号',
+                'user',
+                (string) $user->id,
+                $user->name,
+                ['status' => $user->status],
+                ['status' => $targetStatus]
+            );
+
             return $this->businessError('系统至少需要保留一个启用状态的系统管理员账号');
         }
 
@@ -197,7 +213,7 @@ class UserController extends Controller
             ['status' => $targetStatus]
         );
 
-        return $this->success([], $targetStatus === 1 ? '用户已启用' : '用户已停用');
+        return $this->success(null, $targetStatus === 1 ? '用户已启用' : '用户已停用');
     }
 
     public function unlock(Request $request, int $id): JsonResponse
@@ -225,7 +241,7 @@ class UserController extends Controller
             ['status' => 1]
         );
 
-        return $this->success([], '账号已解锁');
+        return $this->success(null, '账号已解锁');
     }
 
     public function resetPassword(ResetUserPasswordRequest $request, int $id): JsonResponse
@@ -259,10 +275,7 @@ class UserController extends Controller
             ['must_change_password' => true]
         );
 
-        return $this->success([
-            'id' => $user->id,
-            'new_password' => $newPassword,
-        ]);
+        return $this->success(null, '密码重置成功，用户下次登录须修改密码');
     }
 
     private function syncProjects(int $userId, array $projectIds): void

@@ -15,11 +15,13 @@ class ChangePasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'current_password' => ['required', 'string'],
+            'old_password' => ['nullable', 'string', 'required_without:current_password'],
+            'current_password' => ['nullable', 'string', 'required_without:old_password'],
             'new_password' => [
                 'required',
                 'string',
                 'different:current_password',
+                'different:old_password',
                 Password::min(8)->mixedCase()->letters()->numbers(),
             ],
             'new_password_confirmation' => ['required', 'same:new_password'],

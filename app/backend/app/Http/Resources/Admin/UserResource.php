@@ -32,8 +32,12 @@ class UserResource extends JsonResource
                 default => '未知',
             },
             'must_change_password' => $this->must_change_password,
+            'login_fail_count' => (int) ($this->login_fail_count ?? 0),
+            'locked_at' => optional($this->locked_at)?->toIso8601String(),
             'last_login_at' => optional($this->last_login_at)?->toIso8601String(),
+            'created_by' => $this->created_by,
             'created_at' => optional($this->created_at)?->toIso8601String(),
+            'updated_at' => optional($this->updated_at)?->toIso8601String(),
             'remark' => $this->remark,
         ];
     }

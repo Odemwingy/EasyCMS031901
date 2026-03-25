@@ -104,26 +104,29 @@ class RoleController extends Controller
             RoleListResource::make($role->loadCount('users'))->resolve()
         );
 
-        return $this->success(['id' => $role->id]);
+        return $this->success([
+            'id' => $role->id,
+            'name' => $role->name,
+            'code' => $role->code,
+            'status' => $role->status,
+            'created_at' => optional($role->created_at)?->toIso8601String(),
+        ], '角色创建成功');
     }
 
     public function update(UpdateRoleRequest $request, int $id): JsonResponse
     {
         /** @var User $operator */
         $operator = $request->user();
-        $role = Role::query()->findOrFail($id);
-        $before = RoleListResource::make($role->loadCount('users'))->resolve();
-
-        if ($role->is_system_preset) {
-            return $this->businessError('系统预置角色暂不支持编辑基础信息');
-        }
+        $role = Role::query()->withCount('users')->findOrFail($id);
+        $before = RoleListResource::make($role)->resolve();
 
         $role->update([
             'name' => $request->string('name')->toString(),
-            'code' => $request->string('code')->toString(),
             'description' => $request->input('description'),
             'status' => $request->integer('status'),
         ]);
+
+        $updatedRole = $role->fresh()->loadCount('users');
 
         $this->writeAuditLog(
             'admin_role_update',
@@ -135,10 +138,68 @@ class RoleController extends Controller
             (string) $role->id,
             $role->name,
             $before,
-            RoleListResource::make($role->fresh()->loadCount('users'))->resolve()
+            RoleListResource::make($updatedRole)->resolve()
         );
 
-        return $this->success(['id' => $role->id]);
+        return $this->success(RoleDetailResource::make($updatedRole->load([
+            'menus' => fn ($query) => $query->with('parent')->orderBy('sort')->orderBy('id'),
+            'users' => fn ($query) => $query->orderBy('user_roles.created_at'),
+        ])), '角色信息已更新');
+    }
+
+    public function destroy(Request $request, int $id): JsonResponse
+    {
+        /** @var User $operator */
+        $operator = $request->user();
+        $role = Role::query()->withCount('users')->findOrFail($id);
+
+        if ($role->is_system_preset) {
+            $this->writeAuditLog(
+                'admin_role_delete',
+                $operator,
+                'delete',
+                2,
+                '系统预置角色不可删除',
+                'role',
+                (string) $role->id,
+                $role->name
+            );
+
+            return $this->businessError('系统预置角色不可删除');
+        }
+
+        if ($role->users_count > 0) {
+            $this->writeAuditLog(
+                'admin_role_delete',
+                $operator,
+                'delete',
+                2,
+                '该角色下存在用户，请先解绑后再删除',
+                'role',
+                (string) $role->id,
+                $role->name
+            );
+
+            return $this->businessError('该角色下存在用户，请先解绑后再删除');
+        }
+
+        $before = RoleListResource::make($role)->resolve();
+        $role->delete();
+
+        $this->writeAuditLog(
+            'admin_role_delete',
+            $operator,
+            'delete',
+            1,
+            null,
+            'role',
+            (string) $role->id,
+            $role->name,
+            $before,
+            null
+        );
+
+        return $this->success(null, '角色已删除');
     }
 
     public function copy(CopyRoleRequest $request, int $id): JsonResponse
@@ -175,7 +236,13 @@ class RoleController extends Controller
             ['id' => $role->id, 'name' => $role->name, 'code' => $role->code]
         );
 
-        return $this->success(['id' => $role->id]);
+        return $this->success([
+            'id' => $role->id,
+            'name' => $role->name,
+            'code' => $role->code,
+            'status' => $role->status,
+            'created_at' => optional($role->created_at)?->toIso8601String(),
+        ], '角色创建成功');
     }
 
     public function updateStatus(UpdateRoleStatusRequest $request, int $id): JsonResponse
@@ -186,7 +253,45 @@ class RoleController extends Controller
         $targetStatus = $request->integer('status');
 
         if ($role->code === 'system_admin' && $targetStatus === 2) {
+            $this->writeAuditLog(
+                'admin_role_status_change',
+                $operator,
+                'toggle-status',
+                2,
+                '系统管理员角色不允许停用',
+                'role',
+                (string) $role->id,
+                $role->name,
+                ['status' => $role->status],
+                ['status' => $targetStatus]
+            );
+
             return $this->businessError('系统管理员角色不允许停用');
+        }
+
+        if ($targetStatus === 2) {
+            $activeUserCount = $role->users()
+                ->where('users.status', 1)
+                ->count();
+
+            if ($activeUserCount > 0) {
+                $message = "该角色下存在 {$activeUserCount} 个启用用户，请先解绑或停用相关用户后再停用";
+
+                $this->writeAuditLog(
+                    'admin_role_status_change',
+                    $operator,
+                    'toggle-status',
+                    2,
+                    $message,
+                    'role',
+                    (string) $role->id,
+                    $role->name,
+                    ['status' => $role->status],
+                    ['status' => $targetStatus]
+                );
+
+                return $this->businessError($message);
+            }
         }
 
         $beforeStatus = $role->status;
@@ -205,7 +310,7 @@ class RoleController extends Controller
             ['status' => $targetStatus]
         );
 
-        return $this->success([], $targetStatus === 1 ? '角色已启用' : '角色已停用');
+        return $this->success(null, $targetStatus === 1 ? '角色已启用' : '角色已停用');
     }
 
     public function permissions(int $id): JsonResponse
@@ -242,6 +347,17 @@ class RoleController extends Controller
         $role = Role::query()->with('menus:id,permission')->findOrFail($id);
 
         if ($role->code === 'system_admin') {
+            $this->writeAuditLog(
+                'admin_role_permissions_update',
+                $operator,
+                'assign-permissions',
+                2,
+                '系统管理员为内置超级角色，权限不可编辑',
+                'role',
+                (string) $role->id,
+                $role->name
+            );
+
             return $this->businessError('系统管理员为内置超级角色，权限不可编辑');
         }
 
@@ -283,6 +399,6 @@ class RoleController extends Controller
             ['permissions' => $permissions->all()]
         );
 
-        return $this->success();
+        return $this->success(null, '权限配置已保存');
     }
 }

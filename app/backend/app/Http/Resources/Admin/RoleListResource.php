@@ -19,6 +19,7 @@ class RoleListResource extends JsonResource
             'status' => $this->status,
             'status_label' => $this->status === 1 ? '启用' : '停用',
             'user_count' => (int) ($this->users_count ?? $this->user_count ?? 0),
+            'created_at' => optional($this->created_at)?->toIso8601String(),
             'updated_at' => optional($this->updated_at)?->toIso8601String(),
         ];
     }

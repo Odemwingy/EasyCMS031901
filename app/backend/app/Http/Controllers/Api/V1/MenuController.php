@@ -62,7 +62,12 @@ class MenuController extends Controller
             MenuDetailResource::make($menu->load('parent'))->resolve()
         );
 
-        return $this->success(['id' => $menu->id]);
+        return $this->success([
+            'id' => $menu->id,
+            'name' => $menu->name,
+            'permission' => $menu->permission,
+            'created_at' => optional($menu->created_at)?->toIso8601String(),
+        ], '菜单创建成功');
     }
 
     public function update(UpdateMenuRequest $request, int $id): JsonResponse
@@ -73,14 +78,25 @@ class MenuController extends Controller
         $before = MenuDetailResource::make($menu)->resolve();
 
         if ($this->isDescendantParent($menu->id, $request->input('parent_id'))) {
+            $this->writeAuditLog(
+                'admin_menu_update',
+                $operator,
+                'edit',
+                2,
+                '上级菜单不能选择当前节点或其子节点',
+                'menu',
+                (string) $menu->id,
+                $menu->name,
+                $before,
+                null
+            );
+
             return $this->businessError('上级菜单不能选择当前节点或其子节点');
         }
 
         $menu->update([
             'parent_id' => $request->input('parent_id'),
-            'type' => $request->integer('type'),
             'name' => $request->string('name')->toString(),
-            'permission' => $request->string('permission')->toString(),
             'route_path' => $request->input('route_path'),
             'component' => $request->input('component'),
             'icon' => $request->input('icon'),
@@ -88,6 +104,8 @@ class MenuController extends Controller
             'status' => $request->integer('status'),
             'remark' => $request->input('remark'),
         ]);
+
+        $updatedMenu = $menu->fresh()->load('parent');
 
         $this->writeAuditLog(
             'admin_menu_update',
@@ -99,10 +117,10 @@ class MenuController extends Controller
             (string) $menu->id,
             $menu->name,
             $before,
-            MenuDetailResource::make($menu->fresh()->load('parent'))->resolve()
+            MenuDetailResource::make($updatedMenu)->resolve()
         );
 
-        return $this->success(['id' => $menu->id]);
+        return $this->success(MenuDetailResource::make($updatedMenu), '菜单信息已更新');
     }
 
     public function updateStatus(UpdateMenuStatusRequest $request, int $id): JsonResponse
@@ -112,8 +130,11 @@ class MenuController extends Controller
         $menu = Menu::query()->findOrFail($id);
         $beforeStatus = $menu->status;
         $targetStatus = $request->integer('status');
+        $targetIds = $this->collectDescendantIds($menu->id);
 
-        $menu->update(['status' => $targetStatus]);
+        $affectedCount = Menu::query()
+            ->whereIn('id', $targetIds)
+            ->update(['status' => $targetStatus, 'updated_at' => now()]);
 
         $this->writeAuditLog(
             'admin_menu_status_change',
@@ -125,10 +146,12 @@ class MenuController extends Controller
             (string) $menu->id,
             $menu->name,
             ['status' => $beforeStatus],
-            ['status' => $targetStatus]
+            ['status' => $targetStatus, 'affected_count' => $affectedCount]
         );
 
-        return $this->success([], $targetStatus === 1 ? '菜单已启用' : '菜单已停用');
+        return $this->success([
+            'affected_count' => $affectedCount,
+        ], $targetStatus === 1 ? '菜单已启用' : '菜单已停用');
     }
 
     public function destroy(Request $request, int $id): JsonResponse
@@ -138,10 +161,32 @@ class MenuController extends Controller
         $menu = Menu::query()->withCount(['children', 'roles'])->findOrFail($id);
 
         if ($menu->children_count > 0) {
+            $this->writeAuditLog(
+                'admin_menu_delete',
+                $operator,
+                'delete',
+                2,
+                '当前菜单下存在子节点，不能直接删除',
+                'menu',
+                (string) $menu->id,
+                $menu->name
+            );
+
             return $this->businessError('当前菜单下存在子节点，不能直接删除');
         }
 
         if ($menu->roles_count > 0) {
+            $this->writeAuditLog(
+                'admin_menu_delete',
+                $operator,
+                'delete',
+                2,
+                '当前菜单已被角色绑定，不能直接删除',
+                'menu',
+                (string) $menu->id,
+                $menu->name
+            );
+
             return $this->businessError('当前菜单已被角色绑定，不能直接删除');
         }
 
@@ -161,7 +206,7 @@ class MenuController extends Controller
             null
         );
 
-        return $this->success();
+        return $this->success(null, '菜单已删除');
     }
 
     private function buildTree($groupedMenus, ?int $parentId): array
@@ -212,5 +257,24 @@ class MenuController extends Controller
         }
 
         return false;
+    }
+
+    private function collectDescendantIds(int $menuId): array
+    {
+        $allMenus = Menu::query()->get(['id', 'parent_id']);
+        $childrenByParent = $allMenus->groupBy('parent_id');
+        $ids = [];
+        $stack = [$menuId];
+
+        while ($stack !== []) {
+            $currentId = array_pop($stack);
+            $ids[] = $currentId;
+
+            foreach ($childrenByParent->get($currentId, collect()) as $childMenu) {
+                $stack[] = $childMenu->id;
+            }
+        }
+
+        return array_values(array_unique($ids));
     }
 }

@@ -32,8 +32,22 @@ trait InteractsWithAuditLogs
             'after_value' => $afterValue,
             'result' => $result,
             'fail_reason' => $failReason,
-            'request_id' => (string) Str::uuid(),
+            'source_page' => $this->resolveSourcePage(),
+            'request_id' => request()->headers->get('X-Request-ID') ?: (string) Str::uuid(),
             'ip_address' => request()->ip(),
         ]);
+    }
+
+    private function resolveSourcePage(): ?string
+    {
+        $referer = request()->headers->get('referer');
+
+        if (!$referer) {
+            return null;
+        }
+
+        $path = parse_url($referer, PHP_URL_PATH);
+
+        return is_string($path) && $path !== '' ? $path : null;
     }
 }
