@@ -10,6 +10,30 @@ type AccessSnapshot = {
 };
 
 const ACCESS_KEY = "easycms_access_snapshot";
+const ROUTE_ALIASES: Record<string, string> = {
+  "/admin/users": "/users",
+  "/admin/roles": "/roles",
+  "/admin/menus": "/menus",
+  "/admin/audit-logs": "/audit-log",
+  "/admin/permissions": "/permissions",
+  "/admin/notifications": "/notifications",
+  "/admin/system-params": "/system-params",
+};
+
+function normalizeRoutePath(path: string) {
+  const clean = path.trim();
+  if (!clean.startsWith("/")) return "";
+  if (ROUTE_ALIASES[clean]) return ROUTE_ALIASES[clean];
+
+  // 通用兜底：后端返回 /admin/* 时，优先映射为前端一级路由。
+  if (clean.startsWith("/admin/")) {
+    const leaf = clean.slice("/admin/".length);
+    if (leaf === "audit-logs") return "/audit-log";
+    return `/${leaf}`;
+  }
+
+  return clean;
+}
 
 function walkMenus(
   menus: MenuNode[],
@@ -19,8 +43,9 @@ function walkMenus(
   menus.forEach((menu) => {
     const routePath = (menu.route_path || "").trim();
     const permission = (menu.permission || "").trim();
-    if (routePath.startsWith("/")) {
-      routes.add(routePath);
+    const normalizedRoutePath = normalizeRoutePath(routePath);
+    if (normalizedRoutePath) {
+      routes.add(normalizedRoutePath);
     }
     if (permission) {
       permissions.add(permission);
@@ -41,6 +66,12 @@ export function setAccessFromMenus(menus: MenuNode[]) {
     permissions: [...permissions],
   };
   sessionStorage.setItem(ACCESS_KEY, JSON.stringify(snapshot));
+
+  if (typeof window !== "undefined" && import.meta.env.DEV) {
+    // 联调期调试输出：快速确认后端菜单路由映射结果
+    console.info("[easycms] access routes:", snapshot.routes);
+    console.info("[easycms] access permissions:", snapshot.permissions);
+  }
 }
 
 function getAccessSnapshot(): AccessSnapshot {
