@@ -2,6 +2,7 @@
 import { ContentCenterView } from "./pages/ContentCenter";
 import { WorkbenchView } from "./pages/Workbench";
 import { CategoryTreeLayout } from "./pages/CategoryTree";
+import { LoginPage } from "./pages/Login";
 
 // Backend Management Views
 import { UserManagementView, RoleManagementView, AuditLogView } from "./pages/BackendManagement";
@@ -27,6 +28,7 @@ import {
 import React, { useState } from "react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { LogOut, ChevronDown, User, Settings as SettingsIcon } from "lucide-react";
 
 function cn(...inputs: any[]) {
   return twMerge(clsx(inputs));
@@ -121,7 +123,14 @@ export const SECONDARY_NAV: Record<string, { id: string; label: string }[]> = {
 // Layout Components
 function TopBar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const activePrimary = location.pathname.split('/')[1] || 'workbench';
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem("cms_auth");
+    navigate("/login", { replace: true });
+  };
 
   return (
     <header className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-4 sticky top-0 z-10 shrink-0">
@@ -160,9 +169,46 @@ function TopBar() {
           <Bell className="h-5 w-5" />
           <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
         </button>
-        <div className="flex items-center gap-2 cursor-pointer p-1 pr-2 hover:bg-gray-100 rounded-full transition-colors">
-          <UserCircle className="h-7 w-7 text-gray-400" />
-          <span className="text-sm font-medium text-gray-700 hidden sm:block">Admin</span>
+        <div className="relative">
+          <button
+            onClick={() => setUserMenuOpen(!userMenuOpen)}
+            className="flex items-center gap-2 cursor-pointer p-1 pr-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <UserCircle className="h-7 w-7 text-gray-400" />
+            <span className="text-sm font-medium text-gray-700 hidden sm:block">Admin</span>
+            <ChevronDown className="h-3.5 w-3.5 text-gray-400 hidden sm:block" />
+          </button>
+
+          {userMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-20" onClick={() => setUserMenuOpen(false)} />
+              <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-30">
+                <div className="px-4 py-3 border-b border-gray-100">
+                  <p className="text-sm font-medium text-gray-900">Admin</p>
+                  <p className="text-xs text-gray-500 mt-0.5">admin@groundcms.com</p>
+                </div>
+                <div className="py-1">
+                  <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    <User className="h-4 w-4 text-gray-400" />
+                    个人信息
+                  </button>
+                  <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    <SettingsIcon className="h-4 w-4 text-gray-400" />
+                    偏好设置
+                  </button>
+                </div>
+                <div className="border-t border-gray-100 py-1">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    退出登录
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </header>
@@ -292,7 +338,7 @@ function PlaceholderView({ title }: { title: string }) {
       </div>
       <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
       <p className="text-gray-500 max-w-sm">
-        此模块正在开发中，将根据《��品功能结构图与信息结构图 PRD》规范逐步完善相关业务功能。
+        此模块正在开发中，将根据《品功能结构图与信息结构图 PRD》规范逐步完善相关业务功能。
       </p>
     </div>
   );
@@ -300,6 +346,10 @@ function PlaceholderView({ title }: { title: string }) {
 
 // Content Center Specific View
 export const router = createBrowserRouter([
+  {
+    path: "/login",
+    element: <LoginPage />,
+  },
   {
     path: "/",
     Component: DashboardLayout,
