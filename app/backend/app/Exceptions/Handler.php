@@ -8,15 +8,11 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
 {
-    /**
-     * The list of the inputs that are never flashed to the session on validation exceptions.
-     *
-     * @var array<int, string>
-     */
     protected $dontFlash = [
         'current_password',
         'password',
@@ -79,6 +75,19 @@ class Handler extends ExceptionHandler
             ], 404);
         });
 
+        $this->renderable(function (NotFoundHttpException $exception, $request): ?JsonResponse {
+            if (!$request->is('api/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'code' => 1004,
+                'message' => '资源不存在',
+                'data' => [],
+                'timestamp' => now()->getTimestampMs(),
+            ], 404);
+        });
+
         $this->renderable(function (Throwable $exception, $request): ?JsonResponse {
             if (
                 !$request->is('api/*')
@@ -86,6 +95,7 @@ class Handler extends ExceptionHandler
                 || $exception instanceof AuthenticationException
                 || $exception instanceof AuthorizationException
                 || $exception instanceof ModelNotFoundException
+                || $exception instanceof NotFoundHttpException
             ) {
                 return null;
             }

@@ -176,12 +176,14 @@ class UserController extends Controller
         $targetStatus = $request->integer('status');
 
         if ($targetStatus === 2 && $this->isLastSystemAdmin($user)) {
+            $message = '系统至少需要保留一个启用状态的系统管理员账号';
+
             $this->writeAuditLog(
                 'admin_user_status_change',
                 $operator,
                 'toggle-status',
                 2,
-                '系统至少需要保留一个启用状态的系统管理员账号',
+                $message,
                 'user',
                 (string) $user->id,
                 $user->name,
@@ -189,7 +191,7 @@ class UserController extends Controller
                 ['status' => $targetStatus]
             );
 
-            return $this->businessError('系统至少需要保留一个启用状态的系统管理员账号');
+            return $this->businessError($message);
         }
 
         $beforeStatus = $user->status;
@@ -275,7 +277,7 @@ class UserController extends Controller
             ['must_change_password' => true]
         );
 
-        return $this->success(null, '密码重置成功，用户下次登录须修改密码');
+        return $this->success(null, '密码重置成功，用户下次登录需修改密码');
     }
 
     private function syncProjects(int $userId, array $projectIds): void

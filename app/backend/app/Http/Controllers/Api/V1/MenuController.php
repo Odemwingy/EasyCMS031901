@@ -78,12 +78,14 @@ class MenuController extends Controller
         $before = MenuDetailResource::make($menu)->resolve();
 
         if ($this->isDescendantParent($menu->id, $request->input('parent_id'))) {
+            $message = '上级菜单不能选择当前节点或其子节点';
+
             $this->writeAuditLog(
                 'admin_menu_update',
                 $operator,
                 'edit',
                 2,
-                '上级菜单不能选择当前节点或其子节点',
+                $message,
                 'menu',
                 (string) $menu->id,
                 $menu->name,
@@ -91,7 +93,7 @@ class MenuController extends Controller
                 null
             );
 
-            return $this->businessError('上级菜单不能选择当前节点或其子节点');
+            return $this->businessError($message);
         }
 
         $menu->update([
@@ -161,33 +163,37 @@ class MenuController extends Controller
         $menu = Menu::query()->withCount(['children', 'roles'])->findOrFail($id);
 
         if ($menu->children_count > 0) {
+            $message = '当前菜单下存在子节点，不能直接删除';
+
             $this->writeAuditLog(
                 'admin_menu_delete',
                 $operator,
                 'delete',
                 2,
-                '当前菜单下存在子节点，不能直接删除',
+                $message,
                 'menu',
                 (string) $menu->id,
                 $menu->name
             );
 
-            return $this->businessError('当前菜单下存在子节点，不能直接删除');
+            return $this->businessError($message);
         }
 
         if ($menu->roles_count > 0) {
+            $message = '当前菜单已被角色绑定，不能直接删除';
+
             $this->writeAuditLog(
                 'admin_menu_delete',
                 $operator,
                 'delete',
                 2,
-                '当前菜单已被角色绑定，不能直接删除',
+                $message,
                 'menu',
                 (string) $menu->id,
                 $menu->name
             );
 
-            return $this->businessError('当前菜单已被角色绑定，不能直接删除');
+            return $this->businessError($message);
         }
 
         $before = MenuDetailResource::make($menu->load('parent'))->resolve();

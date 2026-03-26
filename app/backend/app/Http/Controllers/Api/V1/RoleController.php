@@ -154,33 +154,37 @@ class RoleController extends Controller
         $role = Role::query()->withCount('users')->findOrFail($id);
 
         if ($role->is_system_preset) {
+            $message = '系统预置角色不可删除';
+
             $this->writeAuditLog(
                 'admin_role_delete',
                 $operator,
                 'delete',
                 2,
-                '系统预置角色不可删除',
+                $message,
                 'role',
                 (string) $role->id,
                 $role->name
             );
 
-            return $this->businessError('系统预置角色不可删除');
+            return $this->businessError($message);
         }
 
         if ($role->users_count > 0) {
+            $message = '该角色下存在用户，请先解绑后再删除';
+
             $this->writeAuditLog(
                 'admin_role_delete',
                 $operator,
                 'delete',
                 2,
-                '该角色下存在用户，请先解绑后再删除',
+                $message,
                 'role',
                 (string) $role->id,
                 $role->name
             );
 
-            return $this->businessError('该角色下存在用户，请先解绑后再删除');
+            return $this->businessError($message);
         }
 
         $before = RoleListResource::make($role)->resolve();
@@ -253,12 +257,14 @@ class RoleController extends Controller
         $targetStatus = $request->integer('status');
 
         if ($role->code === 'system_admin' && $targetStatus === 2) {
+            $message = '系统管理员角色不允许停用';
+
             $this->writeAuditLog(
                 'admin_role_status_change',
                 $operator,
                 'toggle-status',
                 2,
-                '系统管理员角色不允许停用',
+                $message,
                 'role',
                 (string) $role->id,
                 $role->name,
@@ -266,7 +272,7 @@ class RoleController extends Controller
                 ['status' => $targetStatus]
             );
 
-            return $this->businessError('系统管理员角色不允许停用');
+            return $this->businessError($message);
         }
 
         if ($targetStatus === 2) {
@@ -347,18 +353,20 @@ class RoleController extends Controller
         $role = Role::query()->with('menus:id,permission')->findOrFail($id);
 
         if ($role->code === 'system_admin') {
+            $message = '系统管理员为内置超级角色，权限不可编辑';
+
             $this->writeAuditLog(
                 'admin_role_permissions_update',
                 $operator,
                 'assign-permissions',
                 2,
-                '系统管理员为内置超级角色，权限不可编辑',
+                $message,
                 'role',
                 (string) $role->id,
                 $role->name
             );
 
-            return $this->businessError('系统管理员为内置超级角色，权限不可编辑');
+            return $this->businessError($message);
         }
 
         $permissions = collect($request->input('permissions', []))->unique()->values();

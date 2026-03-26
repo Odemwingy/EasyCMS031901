@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Http\Controllers\Api\V1\Concerns\InteractsWithAuditLogs;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\Auth\UserResource;
-use App\Models\AuditLog;
 use App\Models\Menu;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
+    use InteractsWithAuditLogs;
+
     public function login(LoginRequest $request): JsonResponse
     {
         $username = $request->string('username')->toString();
@@ -28,9 +29,18 @@ class AuthController extends Controller
             ->first();
 
         if (!$user) {
-            $this->writeAuditLog('admin_login_fail', null, 'login', 2, '用户名或密码错误', [
-                'username' => $username,
-            ]);
+            $this->writeAuditLog(
+                'admin_login_fail',
+                null,
+                'login',
+                2,
+                '用户名或密码错误',
+                'user',
+                null,
+                null,
+                null,
+                ['username' => $username]
+            );
 
             return $this->businessError('用户名或密码错误，请重新输入');
         }
@@ -39,13 +49,31 @@ class AuthController extends Controller
         $user->refresh()->load('roles.menus');
 
         if ($user->status === 2) {
-            $this->writeAuditLog('admin_login_fail', $user, 'login', 2, '账号已停用');
+            $this->writeAuditLog(
+                'admin_login_fail',
+                $user,
+                'login',
+                2,
+                '账号已停用',
+                'user',
+                (string) $user->id,
+                $user->name
+            );
 
             return $this->businessError('账号已停用，请联系管理员');
         }
 
         if ($user->status === 3) {
-            $this->writeAuditLog('admin_login_fail', $user, 'login', 2, '账号已锁定');
+            $this->writeAuditLog(
+                'admin_login_fail',
+                $user,
+                'login',
+                2,
+                '账号已锁定',
+                'user',
+                (string) $user->id,
+                $user->name
+            );
 
             return $this->businessError('账号已锁定，请联系管理员或 30 分钟后重试');
         }
@@ -65,9 +93,18 @@ class AuthController extends Controller
         $token = $user->createToken('admin-web')->plainTextToken;
         $expiresAt = now()->addHours(8)->toIso8601String();
 
-        $this->writeAuditLog('admin_login_success', $user, 'login', 1, null, [
-            'org_id' => $user->org_id,
-        ]);
+        $this->writeAuditLog(
+            'admin_login_success',
+            $user,
+            'login',
+            1,
+            null,
+            'user',
+            (string) $user->id,
+            $user->name,
+            null,
+            ['org_id' => $user->org_id]
+        );
 
         return $this->success([
             'token' => $token,
@@ -78,7 +115,22 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
+        /** @var User|null $user */
+        $user = $request->user();
         $request->user()?->currentAccessToken()?->delete();
+
+        if ($user) {
+            $this->writeAuditLog(
+                'admin_logout',
+                $user,
+                'logout',
+                1,
+                null,
+                'user',
+                (string) $user->id,
+                $user->name
+            );
+        }
 
         return $this->success(null);
     }
@@ -100,7 +152,16 @@ class AuthController extends Controller
             : $request->string('current_password')->toString();
 
         if (!Hash::check($currentPassword, $user->password)) {
-            $this->writeAuditLog('admin_user_password_change', $user, 'change-password', 2, '当前密码不正确');
+            $this->writeAuditLog(
+                'admin_user_password_change',
+                $user,
+                'change-password',
+                2,
+                '当前密码不正确',
+                'user',
+                (string) $user->id,
+                $user->name
+            );
 
             return $this->businessError('当前密码不正确');
         }
@@ -110,7 +171,16 @@ class AuthController extends Controller
             'must_change_password' => false,
         ])->save();
 
-        $this->writeAuditLog('admin_user_password_change', $user, 'change-password', 1);
+        $this->writeAuditLog(
+            'admin_user_password_change',
+            $user,
+            'change-password',
+            1,
+            null,
+            'user',
+            (string) $user->id,
+            $user->name
+        );
 
         return $this->success(null, '密码修改成功');
     }
@@ -154,6 +224,10 @@ class AuthController extends Controller
             'login',
             2,
             $locked ? '账号已锁定' : '用户名或密码错误',
+            'user',
+            (string) $user->id,
+            $user->name,
+            null,
             [
                 'username' => $username,
                 'login_fail_count' => $failedCount,
@@ -171,11 +245,35 @@ class AuthController extends Controller
             return;
         }
 
+        $before = [
+            'status' => 3,
+            'login_fail_count' => $user->login_fail_count,
+            'locked_at' => optional($user->locked_at)->toIso8601String(),
+        ];
+
         $user->forceFill([
             'status' => 1,
             'login_fail_count' => 0,
             'locked_at' => null,
         ])->save();
+
+        $this->writeAuditLog(
+            'admin_user_unlock',
+            $user,
+            'unlock',
+            1,
+            null,
+            'user',
+            (string) $user->id,
+            $user->name,
+            $before,
+            [
+                'status' => 1,
+                'login_fail_count' => 0,
+                'locked_at' => null,
+                'unlock_reason' => 'lock_expired',
+            ]
+        );
     }
 
     private function buildMenuTree(Collection $menus, ?int $parentId = null): array
@@ -199,43 +297,5 @@ class AuthController extends Controller
             })
             ->values()
             ->all();
-    }
-
-    private function writeAuditLog(
-        string $logType,
-        ?User $user,
-        string $action,
-        int $result,
-        ?string $failReason = null,
-        array $afterValue = []
-    ): void {
-        AuditLog::query()->create([
-            'log_type' => $logType,
-            'operator_id' => $user?->id,
-            'operator_name' => $user?->name,
-            'action' => $action,
-            'object_type' => 'user',
-            'object_id' => $user?->id ? (string) $user->id : null,
-            'object_name' => $user?->name,
-            'after_value' => $afterValue ?: null,
-            'result' => $result,
-            'fail_reason' => $failReason,
-            'source_page' => $this->resolveSourcePage(),
-            'request_id' => request()->headers->get('X-Request-ID') ?: (string) Str::uuid(),
-            'ip_address' => request()->ip(),
-        ]);
-    }
-
-    private function resolveSourcePage(): ?string
-    {
-        $referer = request()->headers->get('referer');
-
-        if (!$referer) {
-            return null;
-        }
-
-        $path = parse_url($referer, PHP_URL_PATH);
-
-        return is_string($path) && $path !== '' ? $path : null;
     }
 }

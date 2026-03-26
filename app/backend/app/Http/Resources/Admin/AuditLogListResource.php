@@ -52,6 +52,7 @@ class AuditLogListResource extends JsonResource
             'assign-permissions' => '配置权限',
             'delete' => '删除',
             'login' => '登录',
+            'logout' => '登出',
             default => $this->action,
         };
     }

@@ -39,12 +39,12 @@ class DatabaseSeeder extends Seeder
                 ['parent_permission' => 'admin:roles:list', 'type' => 3, 'name' => '编辑角色', 'permission' => 'admin:roles:edit', 'route_path' => null, 'component' => null, 'icon' => null, 'sort' => 23],
                 ['parent_permission' => 'admin:roles:list', 'type' => 3, 'name' => '切换角色状态', 'permission' => 'admin:roles:toggle-status', 'route_path' => null, 'component' => null, 'icon' => null, 'sort' => 24],
                 ['parent_permission' => 'admin:roles:list', 'type' => 3, 'name' => '删除角色', 'permission' => 'admin:roles:delete', 'route_path' => null, 'component' => null, 'icon' => null, 'sort' => 25],
+                ['parent_permission' => 'admin:roles:list', 'type' => 3, 'name' => '配置权限', 'permission' => 'admin:roles:assign-permissions', 'route_path' => null, 'component' => null, 'icon' => null, 'sort' => 26],
                 ['parent_permission' => 'admin:dashboard:view', 'type' => 2, 'name' => '菜单管理', 'permission' => 'admin:menus:list', 'route_path' => '/admin/menus', 'component' => 'features/menus/MenuPage', 'icon' => 'MenuSquare', 'sort' => 30],
                 ['parent_permission' => 'admin:menus:list', 'type' => 3, 'name' => '新建菜单', 'permission' => 'admin:menus:create', 'route_path' => null, 'component' => null, 'icon' => null, 'sort' => 31],
                 ['parent_permission' => 'admin:menus:list', 'type' => 3, 'name' => '编辑菜单', 'permission' => 'admin:menus:edit', 'route_path' => null, 'component' => null, 'icon' => null, 'sort' => 32],
                 ['parent_permission' => 'admin:menus:list', 'type' => 3, 'name' => '切换菜单状态', 'permission' => 'admin:menus:toggle-status', 'route_path' => null, 'component' => null, 'icon' => null, 'sort' => 33],
                 ['parent_permission' => 'admin:menus:list', 'type' => 3, 'name' => '删除菜单', 'permission' => 'admin:menus:delete', 'route_path' => null, 'component' => null, 'icon' => null, 'sort' => 34],
-                ['parent_permission' => 'admin:menus:list', 'type' => 3, 'name' => '配置角色权限', 'permission' => 'admin:roles:assign-permissions', 'route_path' => null, 'component' => null, 'icon' => null, 'sort' => 35],
                 ['parent_permission' => 'admin:dashboard:view', 'type' => 2, 'name' => '审计日志', 'permission' => 'admin:audit-logs:list', 'route_path' => '/admin/audit-logs', 'component' => 'features/audit-logs/AuditLogPage', 'icon' => 'FileClock', 'sort' => 40],
             ];
 
@@ -86,7 +86,5 @@ class DatabaseSeeder extends Seeder
 
             $adminUser->roles()->sync([$adminRole->id]);
         });
-
-        // 本地默认账号：admin / Abc12345
     }
 }

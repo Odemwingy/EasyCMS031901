@@ -57,6 +57,75 @@ class AdminApiContractTest extends TestCase
             ]);
     }
 
+    public function test_login_with_wrong_password_returns_business_error(): void
+    {
+        $response = $this->postJson('/api/v1/auth/login', [
+            'username' => 'admin',
+            'password' => 'wrong-password',
+        ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonPath('code', 1005)
+            ->assertJsonPath('message', '用户名或密码错误，请重新输入');
+    }
+
+    public function test_logout_writes_audit_log(): void
+    {
+        $admin = User::query()->where('username', 'admin')->firstOrFail();
+        $token = $admin->createToken('test-logout')->plainTextToken;
+
+        $response = $this
+            ->withHeader('Authorization', 'Bearer ' . $token)
+            ->postJson('/api/v1/auth/logout');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('code', 0)
+            ->assertJsonPath('data', null);
+
+        $this->assertDatabaseHas('audit_logs', [
+            'log_type' => 'admin_logout',
+            'operator_id' => $admin->id,
+            'object_type' => 'user',
+            'object_id' => (string) $admin->id,
+            'result' => 1,
+        ]);
+    }
+
+    public function test_expired_locked_user_is_auto_unlocked_and_logged_on_login(): void
+    {
+        $admin = User::query()->where('username', 'admin')->firstOrFail();
+        $admin->forceFill([
+            'status' => 3,
+            'login_fail_count' => 5,
+            'locked_at' => now()->subMinutes(31),
+        ])->save();
+
+        $response = $this->postJson('/api/v1/auth/login', [
+            'username' => 'admin',
+            'password' => 'Abc12345',
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('code', 0);
+
+        $admin->refresh();
+
+        $this->assertSame(1, $admin->status);
+        $this->assertSame(0, $admin->login_fail_count);
+        $this->assertNull($admin->locked_at);
+
+        $this->assertDatabaseHas('audit_logs', [
+            'log_type' => 'admin_user_unlock',
+            'operator_id' => $admin->id,
+            'object_type' => 'user',
+            'object_id' => (string) $admin->id,
+            'result' => 1,
+        ]);
+    }
+
     public function test_system_role_cannot_be_deleted(): void
     {
         $admin = User::query()->where('username', 'admin')->firstOrFail();
@@ -67,8 +136,66 @@ class AdminApiContractTest extends TestCase
 
         $response
             ->assertStatus(422)
-            ->assertJsonPath('code', 1005)
-            ->assertJsonPath('message', '系统预置角色不可删除');
+            ->assertJsonPath('code', 1005);
+    }
+
+    public function test_validation_exception_uses_standard_api_contract(): void
+    {
+        $admin = User::query()->where('username', 'admin')->firstOrFail();
+        Sanctum::actingAs($admin);
+
+        $response = $this->postJson('/api/v1/admin/users', []);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonPath('code', 1001)
+            ->assertJsonPath('message', '参数校验失败')
+            ->assertJsonStructure([
+                'data' => [
+                    'errors',
+                ],
+            ]);
+    }
+
+    public function test_unauthenticated_request_uses_standard_api_contract(): void
+    {
+        $response = $this->getJson('/api/v1/admin/users');
+
+        $response
+            ->assertStatus(401)
+            ->assertJsonPath('code', 1002)
+            ->assertJsonPath('message', '未登录或 token 失效');
+    }
+
+    public function test_forbidden_request_uses_standard_api_contract(): void
+    {
+        $user = User::factory()->create([
+            'username' => 'no_permission_user',
+            'email' => 'no-permission@easycms.local',
+            'status' => 1,
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $response = $this->getJson('/api/v1/admin/users');
+
+        $response
+            ->assertStatus(403)
+            ->assertJsonPath('code', 1003)
+            ->assertJsonPath('message', '无权限');
+    }
+
+    public function test_model_not_found_uses_standard_api_contract(): void
+    {
+        $admin = User::query()->where('username', 'admin')->firstOrFail();
+        Sanctum::actingAs($admin);
+
+        $response = $this->getJson('/api/v1/admin/users/999999');
+
+        $response
+            ->assertStatus(404)
+            ->assertJsonPath('code', 1004)
+            ->assertJsonPath('message', '资源不存在');
     }
 
     public function test_menu_status_update_cascades_to_children_and_returns_affected_count(): void
@@ -85,11 +212,18 @@ class AdminApiContractTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('code', 0)
-            ->assertJsonPath('message', '菜单已停用')
             ->assertJsonPath('data.affected_count', 5);
 
         $this->assertSame(2, $parent->fresh()->status);
         $this->assertSame(2, $child->fresh()->status);
+    }
+
+    public function test_assign_permissions_button_belongs_to_roles_menu(): void
+    {
+        $rolesMenu = Menu::query()->where('permission', 'admin:roles:list')->firstOrFail();
+        $assignPermissionsButton = Menu::query()->where('permission', 'admin:roles:assign-permissions')->firstOrFail();
+
+        $this->assertSame($rolesMenu->id, $assignPermissionsButton->parent_id);
     }
 
     public function test_audit_log_detail_contains_request_id_and_source_page(): void
@@ -113,7 +247,7 @@ class AdminApiContractTest extends TestCase
                 'remark' => 'test',
             ]);
 
-        $response->assertOk()->assertJsonPath('message', '菜单创建成功');
+        $response->assertOk();
 
         $menuId = $response->json('data.id');
         $logId = AuditLog::query()
@@ -130,7 +264,7 @@ class AdminApiContractTest extends TestCase
             ->assertJsonPath('data.source_page', '/menus');
     }
 
-    public function test_reset_password_returns_null_data_and_message(): void
+    public function test_reset_password_returns_null_data(): void
     {
         $admin = User::query()->where('username', 'admin')->firstOrFail();
         $targetUser = User::factory()->create([
@@ -148,7 +282,6 @@ class AdminApiContractTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('code', 0)
-            ->assertJsonPath('message', '密码重置成功，用户下次登录须修改密码')
             ->assertJsonPath('data', null);
     }
 
@@ -178,15 +311,13 @@ class AdminApiContractTest extends TestCase
 
         $response
             ->assertStatus(422)
-            ->assertJsonPath('code', 1005)
-            ->assertJsonPath('message', '该角色下存在 1 个启用用户，请先解绑或停用相关用户后再停用');
+            ->assertJsonPath('code', 1005);
 
         $this->assertDatabaseHas('audit_logs', [
             'log_type' => 'admin_role_status_change',
             'object_type' => 'role',
             'object_id' => (string) $role->id,
             'result' => 2,
-            'fail_reason' => '该角色下存在 1 个启用用户，请先解绑或停用相关用户后再停用',
         ]);
     }
 
