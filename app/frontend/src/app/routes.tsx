@@ -14,7 +14,11 @@ import NotFound from "./pages/NotFound";
 import NoPermission from "./pages/NoPermission";
 import { getCurrentUser, getCurrentUserMenus } from "./api/auth";
 import { getToken, logoutToLogin } from "./lib/auth";
-import { hasRouteAccess, setAccessFromMenus } from "./lib/permission";
+import {
+  hasRouteAccess,
+  isKnownAdminPath,
+  setAccessFromMenus,
+} from "./lib/permission";
 
 async function requireAuth({ request }: LoaderFunctionArgs) {
   if (!getToken()) {
@@ -26,11 +30,19 @@ async function requireAuth({ request }: LoaderFunctionArgs) {
     setAccessFromMenus(menus);
 
     const pathname = new URL(request.url).pathname;
-    if (!hasRouteAccess(pathname)) {
+    // 未注册路径不走菜单鉴权，交给通配子路由展示 404
+    if (
+      isKnownAdminPath(pathname) &&
+      !hasRouteAccess(pathname)
+    ) {
       throw redirect("/403");
     }
     return null;
-  } catch {
+  } catch (e) {
+    // react-router 的 redirect() 会 throw Response；勿当作鉴权失败清会话
+    if (e instanceof Response) {
+      throw e;
+    }
     logoutToLogin();
     throw redirect("/login");
   }
