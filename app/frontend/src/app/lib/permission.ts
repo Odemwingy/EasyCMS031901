@@ -10,6 +10,18 @@ type AccessSnapshot = {
 };
 
 const ACCESS_KEY = "easycms_access_snapshot";
+
+/** 与 `routes.tsx` 中 Admin 子路由一致；未命中的路径交 `*` 渲染 404，不做菜单权限拦截 */
+const ADMIN_ROUTE_ROOTS = new Set([
+  "users",
+  "roles",
+  "permissions",
+  "menus",
+  "audit-log",
+  "notifications",
+  "system-params",
+]);
+
 const ROUTE_ALIASES: Record<string, string> = {
   "/admin/users": "/users",
   "/admin/roles": "/roles",
@@ -102,6 +114,14 @@ export function getAllowedRoutes() {
 
 export function can(permission: string) {
   return getAccessSnapshot().permissions.includes(permission);
+}
+
+/** 是否为后台已注册的前端路径（未知路径应由 404 承接，避免误判为无权限） */
+export function isKnownAdminPath(pathname: string) {
+  const clean = (pathname || "/").trim() || "/";
+  if (clean === "/" || clean === "/403") return true;
+  const first = clean.split("/").filter(Boolean)[0];
+  return first != null && ADMIN_ROUTE_ROOTS.has(first);
 }
 
 export function hasRouteAccess(pathname: string) {
