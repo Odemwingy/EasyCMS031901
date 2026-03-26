@@ -3,4 +3,4 @@
 本目录用于存放**生产代码与产品产物**（按 `rule.md` 的约定）。
 
 - 在此放置可直接运行的应用代码（例如前端页面、后端 API、组件、样式、配置等）。
-- 具体项目结构以 `PRODUCT_REQUIREMENTS.md` 为准。
+- 具体项目结构以 `requirements/versions/PRD_v1.2.md` 为准。
