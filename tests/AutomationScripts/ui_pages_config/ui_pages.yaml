@@ -1,0 +1,39 @@
+environment:
+  name: easycms-dev
+  ui_base_url: "http://192.168.18.79:5173"
+  api_base_url: ""
+
+pages:
+  login:
+    path: "/login"
+    url: "http://192.168.18.79:5173/login"
+    description: "登录页"
+  users:
+    path: "/users"
+    url: "http://192.168.18.79:5173/users"
+    description: "用户管理页"
+  roles:
+    path: "/roles"
+    url: "http://192.168.18.79:5173/roles"
+    description: "角色管理页"
+  permissions:
+    path: "/permissions"
+    url: "http://192.168.18.79:5173/permissions"
+    description: "权限配置页"
+  menus:
+    path: "/menus"
+    url: "http://192.168.18.79:5173/menus"
+    description: "菜单管理页"
+  audit_log:
+    path: "/audit-log"
+    url: "http://192.168.18.79:5173/audit-log"
+    description: "审计日志页"
+
+navigation:
+  default_landing_page: "users"
+  sidebar_order:
+    - users
+    - roles
+    - permissions
+    - menus
+    - audit_log

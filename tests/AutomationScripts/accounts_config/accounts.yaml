@@ -1,0 +1,20 @@
+accounts:
+  admin:
+    username: "admin"
+    password: "Abc12345"
+    role: "system_admin"
+    display_name: "系统管理员"
+    notes:
+      - "当前仅有一个管理员账号可供自动化使用"
+      - "涉及停用最后一个管理员、角色回收等高风险场景时，请勿直接复用此账号作为被操作对象"
+
+test_data_constraints:
+  current_limitations:
+    - "当前只有 admin 账号，普通用户、停用用户、锁定用户、企业客户用户等需后续补充"
+    - "权限矩阵相关测试暂不适合完全依赖现有账号，需要接口造数或预置测试账号"
+  recommended_future_accounts:
+    - "user_readonly"
+    - "user_editor"
+    - "user_locked"
+    - "user_disabled"
+    - "vendor_admin"
