@@ -1,3 +1,5 @@
+import { adminRoutes } from "./admin-routes";
+
 type MenuNode = {
   permission: string;
   route_path: string | null;
@@ -11,8 +13,19 @@ type AccessSnapshot = {
 
 const ACCESS_KEY = "easycms_access_snapshot";
 
-/** 与 `routes.tsx` 中 Admin 子路由一致；未命中的路径交 `*` 渲染 404，不做菜单权限拦截 */
-const ADMIN_ROUTE_ROOTS = new Set([
+/** 第二段合法则视为已注册后台路径（含 /backend/user/123） */
+const BACKEND_SEGMENTS = new Set([
+  "user",
+  "role",
+  "permission",
+  "menu",
+  "audit",
+  "notification",
+  "params",
+]);
+
+/** 旧书签扁平路径 → requireAuth 前仍可能命中，loader 会重定向至 /backend/* */
+const LEGACY_FLAT_ROOTS = new Set([
   "users",
   "roles",
   "permissions",
@@ -23,13 +36,14 @@ const ADMIN_ROUTE_ROOTS = new Set([
 ]);
 
 const ROUTE_ALIASES: Record<string, string> = {
-  "/admin/users": "/users",
-  "/admin/roles": "/roles",
-  "/admin/menus": "/menus",
-  "/admin/audit-logs": "/audit-log",
-  "/admin/permissions": "/permissions",
-  "/admin/notifications": "/notifications",
-  "/admin/system-params": "/system-params",
+  "/admin/users": adminRoutes.user,
+  "/admin/roles": adminRoutes.role,
+  "/admin/menus": adminRoutes.menu,
+  "/admin/audit-logs": adminRoutes.audit,
+  "/admin/audit-log": adminRoutes.audit,
+  "/admin/permissions": adminRoutes.permission,
+  "/admin/notifications": adminRoutes.notification,
+  "/admin/system-params": adminRoutes.params,
 };
 
 function normalizeRoutePath(path: string) {
@@ -37,11 +51,16 @@ function normalizeRoutePath(path: string) {
   if (!clean.startsWith("/")) return "";
   if (ROUTE_ALIASES[clean]) return ROUTE_ALIASES[clean];
 
-  // 通用兜底：后端返回 /admin/* 时，优先映射为前端一级路由。
   if (clean.startsWith("/admin/")) {
     const leaf = clean.slice("/admin/".length);
-    if (leaf === "audit-logs") return "/audit-log";
-    return `/${leaf}`;
+    if (leaf === "audit-logs" || leaf === "audit-log") return adminRoutes.audit;
+    if (leaf === "users") return adminRoutes.user;
+    if (leaf === "roles") return adminRoutes.role;
+    if (leaf === "menus") return adminRoutes.menu;
+    if (leaf === "permissions") return adminRoutes.permission;
+    if (leaf === "notifications") return adminRoutes.notification;
+    if (leaf === "system-params") return adminRoutes.params;
+    return `/backend/${leaf}`;
   }
 
   return clean;
@@ -68,10 +87,24 @@ function walkMenus(
   });
 }
 
+const CANON_TO_LEGACY_FLAT: Record<string, string> = {
+  [adminRoutes.user]: "/users",
+  [adminRoutes.role]: "/roles",
+  [adminRoutes.permission]: "/permissions",
+  [adminRoutes.menu]: "/menus",
+  [adminRoutes.audit]: "/audit-log",
+  [adminRoutes.notification]: "/notifications",
+  [adminRoutes.params]: "/system-params",
+};
+
 export function setAccessFromMenus(menus: MenuNode[]) {
   const routes = new Set<string>();
   const permissions = new Set<string>();
   walkMenus(menus, routes, permissions);
+  for (const r of [...routes]) {
+    const legacy = CANON_TO_LEGACY_FLAT[r];
+    if (legacy) routes.add(legacy);
+  }
 
   const snapshot: AccessSnapshot = {
     routes: [...routes],
@@ -80,7 +113,6 @@ export function setAccessFromMenus(menus: MenuNode[]) {
   sessionStorage.setItem(ACCESS_KEY, JSON.stringify(snapshot));
 
   if (typeof window !== "undefined" && import.meta.env.DEV) {
-    // 联调期调试输出：快速确认后端菜单路由映射结果
     console.info("[easycms] access routes:", snapshot.routes);
     console.info("[easycms] access permissions:", snapshot.permissions);
   }
@@ -116,17 +148,27 @@ export function can(permission: string) {
   return getAccessSnapshot().permissions.includes(permission);
 }
 
-/** 是否为后台已注册的前端路径（未知路径应由 404 承接，避免误判为无权限） */
+/** 是否为后台已注册的前端路径（未知路径应由 404 承接） */
 export function isKnownAdminPath(pathname: string) {
   const clean = (pathname || "/").trim() || "/";
   if (clean === "/" || clean === "/403") return true;
-  const first = clean.split("/").filter(Boolean)[0];
-  return first != null && ADMIN_ROUTE_ROOTS.has(first);
+  const parts = clean.split("/").filter(Boolean);
+  if (parts[0] === "backend" && parts[1] && BACKEND_SEGMENTS.has(parts[1])) {
+    return true;
+  }
+  const first = parts[0];
+  return first != null && LEGACY_FLAT_ROOTS.has(first);
 }
 
 export function hasRouteAccess(pathname: string) {
-  const routes = getAccessSnapshot().routes;
-  if (pathname === "/") return true;
+  const { routes, permissions } = getAccessSnapshot();
+  if (pathname === "/" || pathname === "/backend" || pathname === "/backend/") return true;
   if (pathname === "/403") return true;
+  if (
+    (pathname === adminRoutes.permission || pathname === "/permissions") &&
+    permissions.includes("admin:roles:assign-permissions")
+  ) {
+    return true;
+  }
   return routes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }

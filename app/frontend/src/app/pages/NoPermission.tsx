@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { Button } from "../components/ui/button";
+import { adminRoutes } from "../lib/admin-routes";
 
 export default function NoPermission() {
   return (
@@ -8,8 +9,8 @@ export default function NoPermission() {
       <p className="mt-3 text-sm text-[#00000073]">
         当前账号没有此页面权限，请联系管理员分配后重试。
       </p>
-      <Button asChild className="mt-6 bg-[#1890ff] hover:bg-[#40a9ff]">
-        <Link to="/users">返回用户管理</Link>
+      <Button asChild className="mt-6 bg-indigo-600 hover:bg-indigo-700">
+        <Link to={adminRoutes.user}>返回用户管理</Link>
       </Button>
     </div>
   );

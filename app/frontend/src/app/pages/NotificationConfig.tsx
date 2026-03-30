@@ -85,18 +85,20 @@ export default function NotificationConfig() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm">
-      {/* 筛选栏 */}
-      <div className="p-6 border-b border-[#e8e8e8]">
-        <div className="grid grid-cols-4 gap-4 mb-4">
+    <div className="flex flex-col bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <div className="p-4 border-b border-gray-200 bg-white shrink-0">
+        <div className="flex flex-wrap gap-4 justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-gray-900">通知中心</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <Input
             placeholder="搜索事件名称/编码"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="border-[#d9d9d9] focus-visible:ring-[#1890ff]"
+            className="border-gray-300 focus-visible:ring-indigo-500"
           />
           <Select value={filterChannel} onValueChange={(v) => { setFilterChannel(v); setPage(1); }}>
-            <SelectTrigger className="border-[#d9d9d9]">
+            <SelectTrigger className="border-gray-300">
               <SelectValue placeholder="通知方式" />
             </SelectTrigger>
             <SelectContent>
@@ -106,7 +108,7 @@ export default function NotificationConfig() {
             </SelectContent>
           </Select>
           <Select value={filterEnabled} onValueChange={(v) => { setFilterEnabled(v); setPage(1); }}>
-            <SelectTrigger className="border-[#d9d9d9]">
+            <SelectTrigger className="border-gray-300">
               <SelectValue placeholder="启用状态" />
             </SelectTrigger>
             <SelectContent>
@@ -118,7 +120,7 @@ export default function NotificationConfig() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button className="bg-[#1890ff] hover:bg-[#40a9ff]" onClick={() => toast.info("新建通知规则功能开发中")}>
+          <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-sm" onClick={() => toast.info("新建通知规则功能开发中")}>
             <Plus className="h-4 w-4 mr-2" />
             新建通知规则
           </Button>
@@ -126,45 +128,45 @@ export default function NotificationConfig() {
       </div>
 
       {/* 表格 */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto flex-1">
         <Table>
           <TableHeader>
-            <TableRow className="bg-[#fafafa] hover:bg-[#fafafa]">
-              <TableHead className="text-[#000000d9]">事件名称</TableHead>
-              <TableHead className="text-[#000000d9]">事件编码</TableHead>
-              <TableHead className="text-[#000000d9]">通知方式</TableHead>
-              <TableHead className="text-[#000000d9]">默认接收对象</TableHead>
-              <TableHead className="text-[#000000d9]">启用状态</TableHead>
-              <TableHead className="text-[#000000d9]">最近修改时间</TableHead>
-              <TableHead className="text-[#000000d9] text-right">操作</TableHead>
+            <TableRow className="bg-gray-50 hover:bg-gray-50 border-b border-gray-200">
+              <TableHead className="text-gray-700 font-medium">事件名称</TableHead>
+              <TableHead className="text-gray-700 font-medium">事件编码</TableHead>
+              <TableHead className="text-gray-700 font-medium">通知方式</TableHead>
+              <TableHead className="text-gray-700 font-medium">默认接收对象</TableHead>
+              <TableHead className="text-gray-700 font-medium">启用状态</TableHead>
+              <TableHead className="text-gray-700 font-medium">最近修改时间</TableHead>
+              <TableHead className="text-gray-700 font-medium text-right">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paged.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12 text-[#00000073]">暂无数据</TableCell>
+                <TableCell colSpan={7} className="text-center py-12 text-gray-500">暂无数据</TableCell>
               </TableRow>
             ) : (
               paged.map((n) => (
-                <TableRow key={n.id} className="hover:bg-[#fafafa]">
-                  <TableCell className="font-medium text-[#000000d9]">{n.eventName}</TableCell>
-                  <TableCell className="font-mono text-xs text-[#00000073]">{n.eventCode}</TableCell>
+                <TableRow key={n.id} className="hover:bg-gray-50/80 border-b border-gray-100">
+                  <TableCell className="font-medium text-gray-900">{n.eventName}</TableCell>
+                  <TableCell className="font-mono text-xs text-gray-500">{n.eventCode}</TableCell>
                   <TableCell>
                     <div className="flex gap-1 flex-wrap">
                       {n.channels.map((channel) => (
-                        <Badge key={channel} variant="outline" className="border-[#d9d9d9] text-[#000000d9]">{channel}</Badge>
+                        <Badge key={channel} variant="outline" className="border-gray-300 text-gray-800">{channel}</Badge>
                       ))}
                     </div>
                   </TableCell>
-                  <TableCell className="text-[#00000073] max-w-[180px] truncate">{n.receivers}</TableCell>
+                  <TableCell className="text-gray-600 max-w-[180px] truncate">{n.receivers}</TableCell>
                   <TableCell>
                     <Switch
                       checked={n.enabled}
                       onCheckedChange={() => toggleEnabled(n.id)}
-                      className="data-[state=checked]:bg-[#1890ff]"
+                      className="data-[state=checked]:bg-indigo-600"
                     />
                   </TableCell>
-                  <TableCell className="text-[#00000073]">{n.updatedAt}</TableCell>
+                  <TableCell className="text-gray-500 text-sm">{n.updatedAt}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -192,16 +194,16 @@ export default function NotificationConfig() {
       </div>
 
       {/* 分页 */}
-      <div className="flex items-center justify-between px-6 py-4 border-t border-[#e8e8e8]">
-        <div className="text-sm text-[#00000073]">共 {filtered.length} 条记录，第 {page} / {totalPages} 页</div>
+      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-white shrink-0">
+        <div className="text-sm text-gray-500">共 {filtered.length} 条记录，第 {page} / {totalPages} 页</div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled={page <= 1} className="border-[#d9d9d9]" onClick={() => setPage((p) => p - 1)}>上一页</Button>
+          <Button variant="outline" size="sm" disabled={page <= 1} className="border-gray-300" onClick={() => setPage((p) => p - 1)}>上一页</Button>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
             <Button key={p} variant="outline" size="sm"
-              className={p === page ? "bg-[#1890ff] text-white border-[#1890ff] hover:bg-[#40a9ff]" : "border-[#d9d9d9]"}
+              className={p === page ? "bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700" : "border-gray-300"}
               onClick={() => setPage(p)}>{p}</Button>
           ))}
-          <Button variant="outline" size="sm" disabled={page >= totalPages} className="border-[#d9d9d9]" onClick={() => setPage((p) => p + 1)}>下一页</Button>
+          <Button variant="outline" size="sm" disabled={page >= totalPages} className="border-gray-300" onClick={() => setPage((p) => p + 1)}>下一页</Button>
         </div>
       </div>
     </div>

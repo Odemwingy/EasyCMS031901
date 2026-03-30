@@ -11,7 +11,7 @@
 | 维度 | 设计稿 (`ui/…`) | 应用前端 (`app/frontend`) |
 |------|-----------------|---------------------------|
 | 定位 | 全站 IA 原型，大量 **Placeholder** 与 **本地假登录** | **阶段一后台**：真实 **Bearer 鉴权**、菜单权限、与 Laravel API 联调 |
-| 路由风格 | `/workbench/...`、`/content/...`、`/backend/user` 等两级路径 | **扁平后台路径**：`/users`、`/roles`、`/permissions`、`/menus` 等 |
+| 路由风格 | `/workbench/...`、`/content/...`、`/backend/user` 等两级路径 | **后台已与设计对齐**：`/backend/user`、`/backend/role` 等；旧路径自动 301 式重定向 |
 | 登录后默认页 | 跳转 `/workbench/my-todo` | 跳转 `/`（用户管理） |
 | 壳布局 | `DashboardLayout` 内嵌于 `routes.tsx`，顶栏含 **退出 / 用户菜单** 等（以设计稿为准） | 独立 `AdminLayout.tsx`，已与设计稿 **TopBar + 深栏主导航 + 侧栏 + 面包屑** 对齐；仅 **后台** 一级可进入 |
 | 鉴权 | 无后端，`localStorage` 模拟 | `requireAuth` loader、`hasRouteAccess`、403/404 行为已落地 |
@@ -31,12 +31,13 @@
 ### 2.2 应用前端侧（当前）
 
 - **登录**：`/login`，已登录会 `redirect` 到 `/`。
-- **业务根**：`/` 使用 `AdminLayout`，**无** `/workbench`、`/content` 等段路径。
-- **子路由（节选）**：
-  - `/`、`/users`、`/users/:id`
-  - `/roles`、`/roles/:id`
-  - `/permissions`（权限配置独立页，支持 `?roleId=`）
-  - `/menus`、`/audit-log`、`/notifications`、`/system-params`
+- **业务根**：`/` 使用 `AdminLayout`，登录后默认 **`/backend/user`**；**无** `/workbench`、`/content` 等（未开放模块）。
+- **子路由（节选，canonical）**：
+  - `/`、`/backend/user`、`/backend/user/:id`
+  - `/backend/role`、`/backend/role/:id`
+  - `/backend/permission`（支持 `?roleId=`）
+  - `/backend/menu`、`/backend/audit`、`/backend/notification`、`/backend/params`
+  - 旧书签：`/users`、`/roles` 等子路由 **loader 重定向**至对应 `/backend/*`
   - `/403`、`/*` → NotFound（未注册路径不鉴菜单）
 
 ### 2.3 路径映射参考（设计 → 实现）
@@ -45,13 +46,13 @@
 
 | 设计稿意图 | 应用当前路径 |
 |-----------|--------------|
-| `/backend/user` | `/users` |
-| `/backend/role` | `/roles` |
-| 角色上「权限配置」 | `/permissions?roleId={id}` |
-| `/backend/audit` | `/audit-log` |
-| 通知中心 | `/notifications` |
-| 系统参数 | `/system-params` |
-| 菜单管理（PRD 有，设计 SECONDARY 列表未列 `menus`） | `/menus` |
+| `/backend/user` | `/backend/user`（旧 `/users` 重定向） |
+| `/backend/role` | `/backend/role` |
+| 角色上「权限配置」 | `/backend/permission?roleId={id}` |
+| `/backend/audit` | `/backend/audit` |
+| 通知中心 | `/backend/notification` |
+| 系统参数 | `/backend/params` |
+| 菜单管理 | `/backend/menu` |
 
 ---
 
@@ -78,7 +79,7 @@
 | 用户管理 | `UserManagementView`，表格+筛选为静态 | **同风格 UI** + `getUsers` 分页、筛选、新建用户、批量停用等 |
 | 角色管理 | `RoleManagementView` 卡片栅格 + 内嵌权限视图切换 | **卡片栅格** + 真实接口；权限为 **独立路由** `/permissions` |
 | 权限配置 | `PermissionConfigView` 嵌入角色页或独立矩阵 demo | **左侧模块 + 右侧矩阵** 对齐视觉；数据来自 `auth/menus` + `roles/:id/permissions` |
-| 审计日志 | `AuditLogView` 表格 + 抽屉详情（静态） | `AuditLog.tsx` 以接口为准，UI 可能与设计稿仍有细节差 |
+| 审计日志 | `AuditLogView` 表格 + 抽屉详情（静态） | `AuditLog.tsx`：筛选条与 **右侧 Sheet 详情** 已按设计稿结构对齐，数据为真实接口 |
 
 ### 3.3 仅应用中存在
 
@@ -110,7 +111,7 @@
 | Token | 无或本地 flag | `lib/auth.ts`（localStorage） |
 | 菜单权限 | 无 | `lib/permission.ts`、`setAccessFromMenus` |
 | 退出登录 | TopBar 内示意 | 顶栏下拉 **退出**，并调 `logout` API |
-| 组织/周期切换 | TopBar 下拉（静态） | **禁用 + title 说明**，待对接 |
+| 组织/周期切换 | TopBar 下拉（静态） | **可选下拉 + toast 说明**（演示上下文），与接口联动待对接 |
 
 ---
 
@@ -123,9 +124,9 @@
 
 ## 7. 建议的后续对齐顺序（供排期）
 
-1. **路由策略（可选大改）**：是否将后台改为 `/backend/*` 并与设计 URL 完全一致（需后端书签、文档、权限路径同步）。  
+1. ~~**路由策略**~~：**后台 canonical 已为 `/backend/*`**；文档与后端菜单 `route_path` 仍以 `/admin/*` 为主，由前端 `permission.ts` 归一化。  
 2. **阶段二+模块**：工作台、内容中心等按 `PRIMARY_NAV` 逐个替换占位为真实路由与页面。  
-3. **审计日志 / 通知 / 系统参数**：与 `AuditLogView` 等设计稿逐屏 diff 像素与交互。  
+3. **像素级验收**：通知中心 / 系统参数等可继续与 Figma 做间距与字重微调。  
 4. **设计稿特有依赖**：如图表、动效，在对应页面引入后再比对 `package.json`。
 
 ---

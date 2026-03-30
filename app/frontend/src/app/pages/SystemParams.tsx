@@ -13,11 +13,11 @@ import { Separator } from "../components/ui/separator";
 
 export default function SystemParams() {
   return (
-    <div className="bg-white rounded-lg shadow-sm">
-      <div className="p-6 border-b border-[#e8e8e8]">
-        <h2 className="text-lg font-medium text-[#000000d9]">系统参数配置</h2>
-        <p className="text-sm text-[#00000073] mt-1">
-          管理平台公共参数和后台默认策略
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <div className="p-4 border-b border-gray-200 bg-white">
+        <h2 className="text-xl font-bold text-gray-900">系统参数</h2>
+        <p className="text-sm text-gray-500 mt-1">
+          管理平台公共参数和后台默认策略（阶段一原型，保存未对接接口）
         </p>
       </div>
 
@@ -227,11 +227,11 @@ export default function SystemParams() {
         </div>
       </div>
 
-      <div className="px-6 py-4 border-t border-[#e8e8e8] flex justify-end gap-3">
-        <Button variant="outline" className="border-[#d9d9d9]">
+      <div className="px-6 py-4 border-t border-gray-200 bg-gray-50/50 flex justify-end gap-3">
+        <Button variant="outline" className="border-gray-300 text-gray-700">
           重置
         </Button>
-        <Button className="bg-[#1890ff] hover:bg-[#40a9ff]">
+        <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-sm">
           <Save className="h-4 w-4 mr-2" />
           保存配置
         </Button>

@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { formatDateTime } from "../lib/date";
+import { userDetailPath } from "../lib/admin-routes";
 import { can } from "../lib/permission";
 
 const emptyForm = {
@@ -317,7 +318,7 @@ export default function UserManagement() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-col">
-                      <Link to={`/users/${user.id}`} className="font-medium text-indigo-600 hover:text-indigo-800 hover:underline">
+                      <Link to={userDetailPath(user.id)} className="font-medium text-indigo-600 hover:text-indigo-800 hover:underline">
                         {user.username}
                       </Link>
                       <span className="text-xs text-gray-500">{user.name}</span>
@@ -348,7 +349,7 @@ export default function UserManagement() {
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1 text-gray-400">
                       <Link
-                        to={`/users/${user.id}`}
+                        to={userDetailPath(user.id)}
                         className="p-1 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors inline-flex"
                         title="编辑/详情"
                       >

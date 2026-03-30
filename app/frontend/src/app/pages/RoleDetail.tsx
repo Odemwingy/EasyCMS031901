@@ -4,6 +4,7 @@ import { ArrowLeft, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { getRoleDetail, getRolePermissions, getUsers, updateRole, type RoleDetail as RoleDetailModel, type UserListItem } from "../api/admin";
 import { formatDateTime } from "../lib/date";
+import { adminRoutes } from "../lib/admin-routes";
 import { parseFieldErrors } from "../lib/form";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
@@ -107,17 +108,17 @@ export default function RoleDetail() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link to="/roles">
+          <Link to={adminRoutes.role}>
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
           <div>
-            <h1 className="text-xl font-medium text-[#000000d9]">{role.name}</h1>
+            <h1 className="text-xl font-bold text-gray-900">{role.name}</h1>
             <p className="text-sm text-[#00000073] mt-1">角色ID: {role.id}</p>
           </div>
         </div>
-        <Button className="bg-[#1890ff] hover:bg-[#40a9ff]" onClick={() => setEditOpen(true)}>
+        <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-sm" onClick={() => setEditOpen(true)}>
           <Edit className="h-4 w-4 mr-2" />
           编辑角色
         </Button>

@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { cn } from "../components/ui/utils";
+import { adminRoutes } from "../lib/admin-routes";
 
 type OperationNode = {
   permission: string;
@@ -43,6 +44,13 @@ function normalizeMenuTree(tree: CurrentUserMenu[]): ModuleNode[] {
   const collectOperations = (nodes: CurrentUserMenu[]): OperationNode[] => {
     const items: OperationNode[] = [];
     nodes.forEach((node) => {
+      // 菜单项（type=2）的页面级权限（如 admin:menus:list）需出现在权限矩阵中，否则「菜单管理」等分组缺少入口权限
+      if (node.permission && node.type === 2) {
+        items.push({
+          permission: node.permission,
+          name: `${node.name}（页面访问）`,
+        });
+      }
       if (node.permission && node.type === 3) {
         items.push({
           permission: node.permission,
@@ -265,7 +273,7 @@ export default function PermissionConfig() {
       <div className="h-14 border-b border-gray-200 bg-white flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 shrink-0 shadow-sm z-10">
         <div className="flex items-center gap-3 min-w-0">
           <Link
-            to="/roles"
+            to={adminRoutes.role}
             className="p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-900 rounded transition-colors shrink-0"
             title="返回角色列表"
           >

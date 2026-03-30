@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { login } from "../api/auth";
+import { adminRoutes } from "../lib/admin-routes";
 import { ApiError } from "../lib/http";
 
 const REMEMBER_USERNAME_KEY = "easycms_login_remember_username";
@@ -78,7 +79,7 @@ export default function Login() {
         toast.warning("该账号需修改密码，改密页面暂未接入");
       }
       toast.success("登录成功");
-      navigate("/", { replace: true });
+      navigate(adminRoutes.user, { replace: true });
     } catch (error) {
       const msg = resolveLoginErrorMessage(error);
       setFormError(msg);

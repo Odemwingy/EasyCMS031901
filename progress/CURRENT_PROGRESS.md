@@ -35,6 +35,16 @@
 
 ---
 
+## GitHub Issue 跟进（2026-03-30）
+
+| Issue | 处理说明 |
+|-------|----------|
+| #6 | 已补齐 shadcn 扩展组件依赖，并将 `react-day-picker` / `recharts` / `react-resizable-panels` 固定到与现有 UI 封装兼容的版本；`app/frontend` 下 `npm run build` 已通过。 |
+| #7 | 仓库已存在 `app/backend/`（Laravel 10）与首期 API，该工单描述已过时，**建议在 GitHub 关闭**。 |
+| #11 | 前端路由守卫：`/permissions` 无菜单 `route_path` 时原先无法匹配已授权限，已按 `admin:roles:assign-permissions` 放行，避免异常跳转。 |
+| #12 | 权限配置矩阵补充 **type=2 菜单项页面权限**（如 `admin:menus:list`），避免「菜单管理」等分组缺少入口权限项。 |
+| #13 | `MenuManagement` 弹窗表单组件补全 `fieldErrors` 解构，消除运行时与构建错误。 |
+
 ## 当前阻塞（按优先级）
 
 1. 后端业务 API 尚未完整落地，前端仍有页面依赖原型/假数据。

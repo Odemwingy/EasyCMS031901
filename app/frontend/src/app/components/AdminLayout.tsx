@@ -1,11 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Outlet, Link, useLocation } from "react-router";
 import {
-  Users,
-  Shield,
-  Key,
-  ListTree,
-  FileText,
   Bell,
   Settings,
   Search,
@@ -19,11 +14,14 @@ import {
   ShieldCheck,
   HelpCircle,
   UserCircle,
+  User,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { LucideIcon } from "lucide-react";
 import { getCurrentUser, logout } from "../api/auth";
 import { logoutToLogin } from "../lib/auth";
+import { adminRoutes } from "../lib/admin-routes";
 import { getAllowedRoutes, isKnownAdminPath } from "../lib/permission";
 import { Input } from "./ui/input";
 import {
@@ -49,29 +47,30 @@ const PRIMARY_NAV: PrimaryNavItem[] = [
   { id: "cycle", label: "周期与发布", icon: RefreshCcw, entryHref: null },
   { id: "config", label: "配置中心", icon: Settings, entryHref: null },
   { id: "report", label: "报表中心", icon: BarChart3, entryHref: null },
-  { id: "backend", label: "后台管理", icon: ShieldCheck, entryHref: "/users" },
+  { id: "backend", label: "后台管理", icon: ShieldCheck, entryHref: adminRoutes.user },
   { id: "help", label: "帮助", icon: HelpCircle, entryHref: null },
 ];
 
-/** 二级导航：后台管理与现有 React 路由对齐（通知文案随新 UI 统一为「通知中心」） */
+/** 二级导航：与 ui/Content Management Platform 的 /backend/{segment} 一致 */
 const BACKEND_SECONDARY: { id: string; label: string; path: string }[] = [
-  { id: "user", label: "用户管理", path: "/users" },
-  { id: "role", label: "角色管理", path: "/roles" },
-  { id: "permission", label: "权限配置", path: "/permissions" },
-  { id: "menu", label: "菜单管理", path: "/menus" },
-  { id: "audit", label: "审计日志", path: "/audit-log" },
-  { id: "notification", label: "通知中心", path: "/notifications" },
-  { id: "params", label: "系统参数", path: "/system-params" },
+  { id: "user", label: "用户管理", path: adminRoutes.user },
+  { id: "role", label: "角色管理", path: adminRoutes.role },
+  { id: "permission", label: "权限配置", path: adminRoutes.permission },
+  { id: "menu", label: "菜单管理", path: adminRoutes.menu },
+  { id: "audit", label: "审计日志", path: adminRoutes.audit },
+  { id: "notification", label: "通知中心", path: adminRoutes.notification },
+  { id: "params", label: "系统参数", path: adminRoutes.params },
 ];
 
-const pathLabelMap: Record<string, string> = {
-  users: "用户管理",
-  roles: "角色管理",
-  permissions: "权限配置",
-  menus: "菜单管理",
-  "audit-log": "审计日志",
-  notifications: "通知中心",
-  "system-params": "系统参数",
+/** /backend 下第二段 → 列表页路径与面包屑文案 */
+const BACKEND_CRUMB: Record<string, { label: string; listPath: string }> = {
+  user: { label: "用户管理", listPath: adminRoutes.user },
+  role: { label: "角色管理", listPath: adminRoutes.role },
+  permission: { label: "权限配置", listPath: adminRoutes.permission },
+  menu: { label: "菜单管理", listPath: adminRoutes.menu },
+  audit: { label: "审计日志", listPath: adminRoutes.audit },
+  notification: { label: "通知中心", listPath: adminRoutes.notification },
+  params: { label: "系统参数", listPath: adminRoutes.params },
 };
 
 function isAdminAppPath(pathname: string) {
@@ -85,9 +84,10 @@ function getActivePrimaryId(pathname: string) {
 }
 
 function getActiveSecondaryId(pathname: string): string | null {
-  const p = pathname === "/" ? "/users" : pathname;
+  const p = pathname.replace(/\/$/, "") || "/";
+  const normalized = p === "/" ? adminRoutes.user : p;
   const hit = BACKEND_SECONDARY.find(
-    (item) => p === item.path || p.startsWith(`${item.path}/`),
+    (item) => normalized === item.path || normalized.startsWith(`${item.path}/`),
   );
   return hit?.id ?? null;
 }
@@ -95,6 +95,8 @@ function getActiveSecondaryId(pathname: string): string | null {
 export default function AdminLayout() {
   const [searchValue, setSearchValue] = useState("");
   const [userName, setUserName] = useState("");
+  const [orgContext, setOrgContext] = useState("global");
+  const [cycleContext, setCycleContext] = useState("2026-q1");
   const [allowedMenuPaths] = useState<string[]>(() => getAllowedRoutes());
   const location = useLocation();
 
@@ -112,39 +114,52 @@ export default function AdminLayout() {
 
   const breadcrumbs = useMemo(() => {
     const pathname = location.pathname;
-    const out: { label: string; to?: string }[] = [{ label: "首页", to: "/" }];
+    const out: { label: string; to?: string }[] = [{ label: "首页", to: adminRoutes.user }];
 
     if (pathname === "/403") {
       out.push({ label: "无访问权限" });
       return out;
     }
 
-    if (!isAdminAppPath(pathname) || pathname === "/") {
-      if (!isKnownAdminPath(pathname) && pathname !== "/" && pathname !== "/403") {
+    if (!isAdminAppPath(pathname)) {
+      if (pathname !== "/" && pathname !== "/403") {
         out.push({ label: "页面未找到" });
       } else {
-        out.push({ label: "后台管理", to: "/users" });
-        out.push({ label: "用户管理", to: "/users" });
+        out.push({ label: "后台管理", to: adminRoutes.user });
+        out.push({ label: "用户管理" });
       }
       return out;
     }
 
-    out.push({ label: "后台管理", to: "/users" });
+    const parts = pathname.split("/").filter(Boolean);
 
-    const segments = pathname.split("/").filter(Boolean);
-    const firstSeg = segments[0];
-    const mainLabel = pathLabelMap[firstSeg];
-    if (mainLabel) {
-      out.push({ label: mainLabel, to: `/${firstSeg}` });
-      if (segments.length > 1) {
-        const detailLabel =
-          firstSeg === "users"
-            ? "用户详情"
-            : firstSeg === "roles"
-              ? "角色详情"
-              : segments[1];
-        out.push({ label: detailLabel });
+    if (parts[0] === "backend") {
+      if (parts[1] && BACKEND_CRUMB[parts[1]]) {
+        const meta = BACKEND_CRUMB[parts[1]];
+        out.push({ label: "后台管理", to: adminRoutes.user });
+        const isUserOrRoleDetail =
+          parts.length > 2 && (parts[1] === "user" || parts[1] === "role");
+        if (isUserOrRoleDetail) {
+          out.push({ label: meta.label, to: meta.listPath });
+          out.push({ label: parts[1] === "user" ? "用户详情" : "角色详情" });
+        } else {
+          out.push({ label: meta.label });
+        }
+        return out;
       }
+      out.push({ label: "页面未找到" });
+      return out;
+    }
+
+    if (parts[0] && ["users", "roles", "permissions", "menus", "audit-log", "notifications", "system-params"].includes(parts[0])) {
+      out.push({ label: "后台管理", to: adminRoutes.user });
+      out.push({ label: "跳转中…", to: undefined });
+      return out;
+    }
+
+    if (pathname === "/" || parts.length === 0) {
+      out.push({ label: "后台管理", to: adminRoutes.user });
+      out.push({ label: "用户管理" });
     }
 
     return out;
@@ -180,7 +195,7 @@ export default function AdminLayout() {
       <header className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-4 shrink-0 z-10">
         <div className="flex items-center gap-6 min-w-0">
           <Link
-            to="/"
+            to={adminRoutes.user}
             className="flex items-center gap-2 text-indigo-600 font-bold text-lg shrink-0"
           >
             <Library className="h-6 w-6 shrink-0" />
@@ -189,20 +204,32 @@ export default function AdminLayout() {
 
           <div className="hidden lg:flex items-center gap-2 border-l border-gray-200 pl-6">
             <select
-              className="text-sm bg-gray-50 border border-gray-200 rounded px-2 py-1 outline-none text-gray-700 font-medium cursor-pointer focus:ring-2 focus:ring-indigo-500 max-w-[140px]"
+              className="text-sm bg-gray-50 border border-gray-200 rounded px-2 py-1 outline-none text-gray-700 font-medium cursor-pointer focus:ring-2 focus:ring-indigo-500 max-w-[180px]"
               aria-label="当前组织"
-              disabled
-              title="组织切换将在后续版本对接"
+              value={orgContext}
+              onChange={(e) => {
+                setOrgContext(e.target.value);
+                toast.message("组织上下文（演示）", {
+                  description: "数据权限与组织联动接口尚未接入，此处仅同步设计稿交互。",
+                });
+              }}
             >
-              <option>组织: Global Org</option>
+              <option value="global">组织: Global Org</option>
+              <option value="apac">组织: APAC Region</option>
             </select>
             <select
-              className="text-sm bg-gray-50 border border-gray-200 rounded px-2 py-1 outline-none text-gray-700 font-medium cursor-pointer focus:ring-2 focus:ring-indigo-500 max-w-[180px]"
+              className="text-sm bg-gray-50 border border-gray-200 rounded px-2 py-1 outline-none text-gray-700 font-medium cursor-pointer focus:ring-2 focus:ring-indigo-500 max-w-[200px]"
               aria-label="当前周期"
-              disabled
-              title="周期切换将在后续版本对接"
+              value={cycleContext}
+              onChange={(e) => {
+                setCycleContext(e.target.value);
+                toast.message("周期上下文（演示）", {
+                  description: "发布周期与任务看板尚未接入，选项仅作界面占位。",
+                });
+              }}
             >
-              <option>周期: 2026-Q1-Release</option>
+              <option value="2026-q1">周期: 2026-Q1-Release</option>
+              <option value="2026-q2">周期: 2026-Q2-Release</option>
             </select>
           </div>
         </div>
@@ -236,9 +263,25 @@ export default function AdminLayout() {
                 {userName || "…"}
               </span>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
-              {/* 关键逻辑：登出清理令牌并跳转登录页 */}
-              <DropdownMenuItem onClick={handleLogout}>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem
+                onClick={() => toast.info("个人信息页面暂未接入")}
+                className="cursor-pointer"
+              >
+                <User className="h-4 w-4 mr-2" />
+                个人信息
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => toast.info("偏好设置暂未接入")}
+                className="cursor-pointer"
+              >
+                <SettingsIcon className="h-4 w-4 mr-2" />
+                偏好设置
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="cursor-pointer text-red-600 focus:text-red-600"
+              >
                 <LogOut className="h-4 w-4 mr-2" />
                 退出登录
               </DropdownMenuItem>

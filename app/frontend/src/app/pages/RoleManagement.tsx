@@ -25,6 +25,7 @@ import { Textarea } from "../components/ui/textarea";
 import { formatDateTime } from "../lib/date";
 import { can } from "../lib/permission";
 import { cn } from "../components/ui/utils";
+import { permissionConfigSearch, roleDetailPath } from "../lib/admin-routes";
 
 const emptyForm = { name: "", code: "", description: "" };
 
@@ -172,7 +173,7 @@ export default function RoleManagement() {
                   <div className="flex flex-col gap-1 min-w-0 flex-1">
                     <div className="flex items-center gap-2 min-w-0">
                       <Link
-                        to={`/roles/${role.id}`}
+                        to={roleDetailPath(role.id)}
                         className="font-bold text-gray-900 hover:text-indigo-600 truncate min-w-0"
                         title={role.name}
                       >
@@ -196,7 +197,7 @@ export default function RoleManagement() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild>
-                        <Link to={`/roles/${role.id}`}>查看详情</Link>
+                        <Link to={roleDetailPath(role.id)}>查看详情</Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleCopy(role)} disabled={!canCopyRole}>
                         <Copy className="h-4 w-4 mr-2" />
@@ -232,7 +233,7 @@ export default function RoleManagement() {
                   </div>
                   {canAssignPermissions ? (
                     <Link
-                      to={`/permissions?roleId=${role.id}`}
+                      to={permissionConfigSearch(role.id)}
                       className="text-sm text-indigo-600 hover:text-indigo-700 font-medium inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 whitespace-nowrap"
                     >
                       <Shield className="w-4 h-4 shrink-0" />

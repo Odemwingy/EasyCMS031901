@@ -9,6 +9,7 @@ import {
   updateMenuStatus,
   type MenuTreeItem,
 } from "../api/admin";
+import { openConfirm } from "../lib/confirm";
 import { can } from "../lib/permission";
 import { parseFieldErrors } from "../lib/form";
 import { Button } from "../components/ui/button";
@@ -242,7 +243,14 @@ export default function MenuManagement() {
   };
 
   const handleDelete = async (node: MenuTreeItem) => {
-    if (!window.confirm(`确认删除菜单「${node.name}」吗？`)) return;
+    const ok = await openConfirm({
+      title: "确认删除",
+      description: `确定要删除菜单「${node.name}」吗？此操作不可撤销。`,
+      variant: "destructive",
+      confirmLabel: "删除",
+      cancelLabel: "取消",
+    });
+    if (!ok) return;
     try {
       await deleteMenu(node.id);
       toast.success("菜单已删除");
@@ -308,7 +316,7 @@ export default function MenuManagement() {
           <h2 className="text-lg font-medium text-[#000000d9]">菜单管理</h2>
           <p className="text-sm text-[#00000073] mt-1">按后端菜单树接口维护目录/菜单项/按钮权限</p>
         </div>
-        <Button className="bg-[#1890ff] hover:bg-[#40a9ff]" onClick={() => openCreateDialog()} disabled={!canCreateMenu}>
+        <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => openCreateDialog()} disabled={!canCreateMenu}>
           <Plus className="h-4 w-4 mr-2" />
           新建根节点
         </Button>
@@ -340,7 +348,7 @@ export default function MenuManagement() {
           <MenuFormFields form={form} setForm={setForm} allNodes={allNodes} editablePermission fieldErrors={fieldErrors} />
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpenCreate(false)}>取消</Button>
-            <Button onClick={submitCreate} disabled={submitting || !canCreateMenu} className="bg-[#1890ff] hover:bg-[#40a9ff]">
+            <Button onClick={submitCreate} disabled={submitting || !canCreateMenu} className="bg-indigo-600 hover:bg-indigo-700">
               {submitting ? "提交中..." : "创建"}
             </Button>
           </DialogFooter>
@@ -356,7 +364,7 @@ export default function MenuManagement() {
           <MenuFormFields form={form} setForm={setForm} allNodes={allNodes} editablePermission={false} fieldErrors={fieldErrors} />
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpenEdit(false)}>取消</Button>
-            <Button onClick={submitEdit} disabled={submitting || !canEditMenu} className="bg-[#1890ff] hover:bg-[#40a9ff]">
+            <Button onClick={submitEdit} disabled={submitting || !canEditMenu} className="bg-indigo-600 hover:bg-indigo-700">
               {submitting ? "提交中..." : "保存"}
             </Button>
           </DialogFooter>
@@ -371,6 +379,7 @@ function MenuFormFields({
   setForm,
   allNodes,
   editablePermission,
+  fieldErrors,
 }: {
   form: MenuForm;
   setForm: Dispatch<SetStateAction<MenuForm>>;
