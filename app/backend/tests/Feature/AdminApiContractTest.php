@@ -226,6 +226,58 @@ class AdminApiContractTest extends TestCase
         $this->assertSame($rolesMenu->id, $assignPermissionsButton->parent_id);
     }
 
+    public function test_role_detail_returns_active_and_disabled_user_counts(): void
+    {
+        $admin = User::query()->where('username', 'admin')->firstOrFail();
+        $role = Role::query()->create([
+            'name' => 'role_detail_stats',
+            'code' => 'role_detail_stats',
+            'description' => 'stats test',
+            'data_scope' => 'all',
+            'status' => 1,
+            'created_by' => $admin->id,
+        ]);
+
+        $activeUser = User::factory()->create([
+            'username' => 'role_stats_active',
+            'email' => 'role-stats-active@easycms.local',
+            'status' => 1,
+        ]);
+        $disabledUser = User::factory()->create([
+            'username' => 'role_stats_disabled',
+            'email' => 'role-stats-disabled@easycms.local',
+            'status' => 2,
+        ]);
+        $lockedUser = User::factory()->create([
+            'username' => 'role_stats_locked',
+            'email' => 'role-stats-locked@easycms.local',
+            'status' => 3,
+        ]);
+        $inactiveUser = User::factory()->create([
+            'username' => 'role_stats_inactive',
+            'email' => 'role-stats-inactive@easycms.local',
+            'status' => 4,
+        ]);
+
+        $role->users()->sync([
+            $activeUser->id,
+            $disabledUser->id,
+            $lockedUser->id,
+            $inactiveUser->id,
+        ]);
+
+        Sanctum::actingAs($admin);
+
+        $response = $this->getJson("/api/v1/admin/roles/{$role->id}");
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('code', 0)
+            ->assertJsonPath('data.user_count', 4)
+            ->assertJsonPath('data.active_user_count', 1)
+            ->assertJsonPath('data.disabled_user_count', 1);
+    }
+
     public function test_audit_log_detail_contains_request_id_and_source_page(): void
     {
         $admin = User::query()->where('username', 'admin')->firstOrFail();

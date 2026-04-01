@@ -18,3 +18,12 @@
 - 任何需求变更都**必须**新增一个差异文件，不直接口头覆盖。
 - 开发执行以“当前版本 + 最新差异文件”为准。
 - 若差异文件与旧版本冲突，以差异文件为准，并在下一版 PRD 回收。
+## 最新需求变更
+
+- 角色管理 - 角色详情：
+  - 新增 `active_user_count`
+  - 新增 `disabled_user_count`
+  - `user_count` 保持原口径不变
+
+详细变更说明见：
+- `requirements/diffs/DIFF_role_detail_user_status_counts.md`

@@ -10,6 +10,7 @@ class RoleDetailResource extends JsonResource
     public function toArray(Request $request): array
     {
         $menus = $this->menus ?? collect();
+        $users = $this->users ?? collect();
 
         return [
             'id' => $this->id,
@@ -30,7 +31,9 @@ class RoleDetailResource extends JsonResource
             'status_label' => $this->status === 1 ? '启用' : '停用',
             'is_system_preset' => (bool) $this->is_system_preset,
             'is_readonly' => (bool) $this->is_readonly,
-            'user_count' => (int) ($this->users_count ?? $this->users?->count() ?? 0),
+            'user_count' => (int) ($this->users_count ?? $users->count()),
+            'active_user_count' => (int) $users->where('status', 1)->count(),
+            'disabled_user_count' => (int) $users->where('status', 2)->count(),
             'created_at' => optional($this->created_at)?->toIso8601String(),
             'updated_at' => optional($this->updated_at)?->toIso8601String(),
             'module_permissions' => $menus->where('type', 1)->pluck('name')->values()->all(),
@@ -42,7 +45,7 @@ class RoleDetailResource extends JsonResource
                 'parent_name' => $menu->parent?->name,
             ])->values()->all(),
             'permissions' => $menus->pluck('permission')->filter()->values()->all(),
-            'users' => ($this->users ?? collect())->map(function ($user) {
+            'users' => $users->map(function ($user) {
                 return [
                     'id' => $user->id,
                     'username' => $user->username,

@@ -75,6 +75,7 @@
 - `DELETE /api/v1/admin/roles/{id}`
 - `GET /api/v1/admin/roles/{id}/permissions`
 - `PUT /api/v1/admin/roles/{id}/permissions`
+- 角色详情接口 `GET /api/v1/admin/roles/{id}` 当前额外返回：`user_count`、`active_user_count`、`disabled_user_count`
 
 ### 4.4 菜单管理
 - `GET /api/v1/admin/menus/tree`
