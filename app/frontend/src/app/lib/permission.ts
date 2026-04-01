@@ -1,4 +1,5 @@
 import { adminRoutes } from "./admin-routes";
+import { PLATFORM_PRIMARY_SET } from "./platform-nav";
 
 type MenuNode = {
   permission: string;
@@ -45,6 +46,16 @@ const ROUTE_ALIASES: Record<string, string> = {
   "/admin/notifications": adminRoutes.notification,
   "/admin/system-params": adminRoutes.params,
 };
+
+function firstPathSegment(pathname: string) {
+  return (pathname || "/").trim().split("/").filter(Boolean)[0];
+}
+
+/** 工作台 / 内容中心等 v2 业务壳路由：阶段一不按菜单鉴权，已登录即可访问 */
+export function isPlatformPath(pathname: string) {
+  const first = firstPathSegment(pathname);
+  return first != null && PLATFORM_PRIMARY_SET.has(first);
+}
 
 function normalizeRoutePath(path: string) {
   const clean = path.trim();
@@ -161,6 +172,7 @@ export function isKnownAdminPath(pathname: string) {
 }
 
 export function hasRouteAccess(pathname: string) {
+  if (isPlatformPath(pathname)) return true;
   const { routes, permissions } = getAccessSnapshot();
   if (pathname === "/" || pathname === "/backend" || pathname === "/backend/") return true;
   if (pathname === "/403") return true;

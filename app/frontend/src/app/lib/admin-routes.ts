@@ -1,4 +1,11 @@
 /**
+ * 与 ui/Content Management Platformv2 一致：登录后默认进入工作台待办（静态/联调页面入口）
+ */
+export const platformRoutes = {
+  home: "/workbench/my-todo",
+} as const;
+
+/**
  * 与 ui/Content Management Platform 信息架构一致：后台二级路径为 /backend/{segment}
  */
 export const adminRoutes = {
