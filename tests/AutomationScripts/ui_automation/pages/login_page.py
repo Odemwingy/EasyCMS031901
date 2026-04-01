@@ -55,6 +55,10 @@ class LoginPage:
         self.page.wait_for_function("() => window.location.pathname !== '/login'")
         self.page.wait_for_load_state("domcontentloaded")
 
+    @property
+    def welcome_back_banner(self) -> Locator:
+        return self.page.get_by_text(re.compile(r"欢迎回来")).first
+
     def success_toast(self) -> Locator:
         return self.page.get_by_text("登录成功", exact=True).last
 

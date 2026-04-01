@@ -30,7 +30,7 @@ def test_login_smoke(login_page, admin_account):
     login_page.wait_for_success_redirect()
 
     assert "/login" not in login_page.page.url
-    assert login_page.page.url.rstrip("/").endswith(("192.168.18.79:5173", "/users"))
+    expect(login_page.welcome_back_banner).to_be_visible()
 
 
 @pytest.mark.case_ids("FUNC-016", "FUNC-033", "FUNC-045", "FUNC-059", "FUNC-069")

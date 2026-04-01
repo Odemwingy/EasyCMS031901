@@ -54,7 +54,7 @@
 
 ### Evidence
 - 关联用例：`FUNC-017`、`FUNC-018`、`FUNC-019`、`FUNC-020`
-- 截图地址：`E:\AIautomation\Testrelated\ui_automation\outputs\regression\screenshots\tests_test_regression.py_test_user_management_status_and_pagination_controls_chromium.png`
+- 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_user_management_status_and_pagination_controls_chromium.png`
 
 ---
 
@@ -105,11 +105,11 @@
 
 ### Evidence
 - 关联用例：`FUNC-021`、`FUNC-034`、`FUNC-035`、`FUNC-036`、`FUNC-047`
-- 截图地址：`E:\AIautomation\Testrelated\ui_automation\outputs\regression\screenshots\tests_test_regression.py_test_user_create_dialog_displays_expected_fields_chromium.png`
-- 截图地址：`E:\AIautomation\Testrelated\ui_automation\outputs\regression\screenshots\tests_test_regression.py_test_user_create_dialog_empty_submit_shows_required_validation_chromium.png`
-- 截图地址：`E:\AIautomation\Testrelated\ui_automation\outputs\regression\screenshots\tests_test_regression.py_test_role_management_supports_search_and_shows_preset_role_chromium.png`
-- 截图地址：`E:\AIautomation\Testrelated\ui_automation\outputs\regression\screenshots\tests_test_regression.py_test_role_create_dialog_can_create_role_chromium.png`
-- 截图地址：`E:\AIautomation\Testrelated\ui_automation\outputs\regression\screenshots\tests_test_regression.py_test_menu_create_dialog_can_create_root_directory_chromium.png`
+- 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_user_create_dialog_displays_expected_fields_chromium.png`
+- 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_user_create_dialog_empty_submit_shows_required_validation_chromium.png`
+- 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_role_management_supports_search_and_shows_preset_role_chromium.png`
+- 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_role_create_dialog_can_create_role_chromium.png`
+- 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_menu_create_dialog_can_create_root_directory_chromium.png`
 
 ---
 
@@ -148,7 +148,7 @@
 
 ### Evidence
 - 关联用例：`FUNC-059`、`FUNC-060`
-- 截图地址：`E:\AIautomation\Testrelated\ui_automation\outputs\regression\screenshots\tests_test_regression.py_test_permission_config_displays_backend_permission_groups_chromium.png`
+- 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_permission_config_displays_backend_permission_groups_chromium.png`
 
 ---
 
@@ -197,10 +197,10 @@
 
 ### Evidence
 - 关联用例：`FUNC-047`、`FUNC-048`、`FUNC-052`
-- 截图地址：`E:\AIautomation\Testrelated\ui_automation\outputs\regression\screenshots\tests_test_regression.py_test_menu_create_dialog_displays_expected_fields_chromium.png`
-- 截图地址：`E:\AIautomation\Testrelated\ui_automation\outputs\regression\screenshots\tests_test_regression.py_test_menu_create_dialog_empty_submit_shows_required_validation_chromium.png`
-- 截图地址：`E:\AIautomation\Testrelated\ui_automation\outputs\regression\screenshots\tests_test_regression.py_test_menu_create_dialog_requires_route_and_component_for_menu_item_chromium.png`
-- 截图地址：`E:\AIautomation\Testrelated\ui_automation\outputs\regression\screenshots\tests_test_regression.py_test_menu_edit_dialog_shows_readonly_permission_and_type_hint_chromium.png`
+- 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_menu_create_dialog_displays_expected_fields_chromium.png`
+- 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_menu_create_dialog_empty_submit_shows_required_validation_chromium.png`
+- 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_menu_create_dialog_requires_route_and_component_for_menu_item_chromium.png`
+- 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_menu_edit_dialog_shows_readonly_permission_and_type_hint_chromium.png`
 
 ---
 
@@ -239,7 +239,7 @@
 
 ### Evidence
 - 关联用例：`FUNC-021`
-- 截图地址：`E:\AIautomation\Testrelated\ui_automation\outputs\regression\screenshots\tests_test_regression.py_test_user_create_dialog_can_create_internal_user_chromium.png`
+- 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_user_create_dialog_can_create_internal_user_chromium.png`
 
 ---
 
