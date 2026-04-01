@@ -141,7 +141,7 @@ class UserController extends Controller
                 'name' => $request->string('name')->toString(),
                 'user_type' => $request->integer('user_type'),
                 'org_id' => $request->string('org_id')->toString(),
-                'status' => $request->integer('status'),
+                'status' => $request->has('status') ? $request->integer('status') : $user->status,
                 'remark' => $request->input('remark'),
             ]);
 

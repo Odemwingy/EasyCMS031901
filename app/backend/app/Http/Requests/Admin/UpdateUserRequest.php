@@ -22,7 +22,7 @@ class UpdateUserRequest extends FormRequest
             'role_ids.*' => ['integer', Rule::exists('roles', 'id')],
             'project_ids' => ['nullable', 'array'],
             'project_ids.*' => ['string', 'max:64'],
-            'status' => ['required', 'integer', 'in:1,2,3,4'],
+            'status' => ['nullable', 'integer', 'in:1,2,3,4'],
             'remark' => ['nullable', 'string', 'max:1000'],
         ];
     }

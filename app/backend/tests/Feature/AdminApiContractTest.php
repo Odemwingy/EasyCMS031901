@@ -285,6 +285,43 @@ class AdminApiContractTest extends TestCase
             ->assertJsonPath('data', null);
     }
 
+    public function test_update_user_can_omit_status_and_preserve_original_value(): void
+    {
+        $admin = User::query()->where('username', 'admin')->firstOrFail();
+        $role = Role::query()->where('code', 'system_admin')->firstOrFail();
+        $targetUser = User::factory()->create([
+            'username' => 'update_target',
+            'name' => 'Update Target',
+            'email' => 'update-target@easycms.local',
+            'user_type' => 1,
+            'org_id' => 'org_north_region',
+            'status' => 2,
+        ]);
+        $targetUser->roles()->sync([$role->id]);
+        Sanctum::actingAs($admin);
+
+        $response = $this->putJson("/api/v1/admin/users/{$targetUser->id}", [
+            'name' => 'Updated Target',
+            'user_type' => 2,
+            'org_id' => 'org_south_region',
+            'role_ids' => [$role->id],
+            'project_ids' => ['project-alpha'],
+            'remark' => 'updated without status',
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('code', 0)
+            ->assertJsonPath('data.name', 'Updated Target')
+            ->assertJsonPath('data.status', 2);
+
+        $targetUser->refresh();
+
+        $this->assertSame(2, $targetUser->status);
+        $this->assertSame(2, $targetUser->user_type);
+        $this->assertSame('org_south_region', $targetUser->org_id);
+    }
+
     public function test_role_disable_is_blocked_when_active_users_exist(): void
     {
         $admin = User::query()->where('username', 'admin')->firstOrFail();
