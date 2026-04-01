@@ -75,6 +75,8 @@ export interface RoleListItem {
 }
 
 export interface RoleDetail extends RoleListItem {
+  active_user_count: number;
+  disabled_user_count: number;
   created_at: string;
 }
 
