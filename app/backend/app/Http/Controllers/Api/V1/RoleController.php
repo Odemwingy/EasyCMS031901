@@ -328,13 +328,13 @@ class RoleController extends Controller
         $permissions = $role->code === 'system_admin'
             ? Menu::query()
                 ->where('status', 1)
-                ->where('type', 3)
+                ->whereIn('type', [2, 3])
                 ->pluck('permission')
                 ->filter()
                 ->values()
                 ->all()
             : $role->menus
-                ->where('type', 3)
+                ->filter(fn (Menu $menu): bool => (bool) ($menu->pivot?->is_explicit ?? true))
                 ->pluck('permission')
                 ->filter()
                 ->values()
@@ -373,7 +373,8 @@ class RoleController extends Controller
         $menus = Menu::query()
             ->whereIn('permission', $permissions)
             ->get(['id', 'parent_id', 'permission']);
-        $menuIds = $menus->pluck('id')->all();
+        $explicitMenuIds = $menus->pluck('id')->all();
+        $menuIds = $explicitMenuIds;
         $ancestorIds = [];
 
         foreach ($menus as $menu) {
@@ -390,9 +391,20 @@ class RoleController extends Controller
             ->unique()
             ->values()
             ->all();
-        $beforePermissions = $role->menus->pluck('permission')->filter()->values()->all();
+        $beforePermissions = $role->menus
+            ->filter(fn (Menu $menu): bool => (bool) ($menu->pivot?->is_explicit ?? true))
+            ->pluck('permission')
+            ->filter()
+            ->values()
+            ->all();
 
-        $role->menus()->sync($menuIds);
+        $role->menus()->sync(
+            collect($menuIds)
+                ->mapWithKeys(fn (int $menuId): array => [
+                    $menuId => ['is_explicit' => in_array($menuId, $explicitMenuIds, true)],
+                ])
+                ->all()
+        );
 
         $this->writeAuditLog(
             'admin_role_permissions_update',

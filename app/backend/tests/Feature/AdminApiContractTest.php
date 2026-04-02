@@ -226,6 +226,48 @@ class AdminApiContractTest extends TestCase
         $this->assertSame($rolesMenu->id, $assignPermissionsButton->parent_id);
     }
 
+    public function test_role_permissions_save_and_readback_match_explicit_permissions(): void
+    {
+        $admin = User::query()->where('username', 'admin')->firstOrFail();
+        Sanctum::actingAs($admin);
+
+        $role = Role::query()->create([
+            'name' => 'permission_roundtrip_role',
+            'code' => 'permission_roundtrip_role',
+            'description' => 'permission roundtrip test',
+            'data_scope' => 'all',
+            'status' => 1,
+            'created_by' => $admin->id,
+        ]);
+
+        $payload = [
+            'permissions' => ['admin:users:list', 'admin:users:create'],
+        ];
+
+        $this->putJson("/api/v1/admin/roles/{$role->id}/permissions", $payload)
+            ->assertOk()
+            ->assertJsonPath('code', 0);
+
+        $response = $this->getJson("/api/v1/admin/roles/{$role->id}/permissions");
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('code', 0);
+
+        $this->assertEqualsCanonicalizing(
+            $payload['permissions'],
+            $response->json('data.permissions')
+        );
+
+        $role->refresh();
+        $storedMenus = $role->menus()->get()->keyBy('permission');
+
+        $this->assertTrue((bool) $storedMenus['admin:users:list']->pivot->is_explicit);
+        $this->assertTrue((bool) $storedMenus['admin:users:create']->pivot->is_explicit);
+        $this->assertArrayHasKey('admin:dashboard:view', $storedMenus->all());
+        $this->assertFalse((bool) $storedMenus['admin:dashboard:view']->pivot->is_explicit);
+    }
+
     public function test_role_detail_returns_active_and_disabled_user_counts(): void
     {
         $admin = User::query()->where('username', 'admin')->firstOrFail();
