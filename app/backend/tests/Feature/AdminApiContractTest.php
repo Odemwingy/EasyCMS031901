@@ -374,6 +374,20 @@ class AdminApiContractTest extends TestCase
         $this->assertSame('org_south_region', $targetUser->org_id);
     }
 
+    public function test_user_search_by_username_returns_matching_user_without_server_error(): void
+    {
+        $admin = User::query()->where('username', 'admin')->firstOrFail();
+        Sanctum::actingAs($admin);
+
+        $response = $this->getJson('/api/v1/admin/users?keyword=admin');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('code', 0)
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.list.0.username', 'admin');
+    }
+
     public function test_role_disable_is_blocked_when_active_users_exist(): void
     {
         $admin = User::query()->where('username', 'admin')->firstOrFail();
