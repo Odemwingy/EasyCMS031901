@@ -13,6 +13,11 @@
 2. 再读最新 `requirements/diffs/DIFF_*.md`
 3. 最后读 `progress/CURRENT_PROGRESS.md`
 
+## 需求变更流程
+
+- 规范流程说明见：`requirements/CHANGE_PROCESS.md`
+- 已完成需求发生变更时，先按该流程补产品变更说明与标准 diff，再进入开发
+
 ## 使用约定
 
 - 任何需求变更都**必须**新增一个差异文件，不直接口头覆盖。
