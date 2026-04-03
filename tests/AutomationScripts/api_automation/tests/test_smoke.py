@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import pytest
 
+from test_data import create_three_level_menu_tree, delete_menu_if_possible
+
 
 @pytest.mark.case_ids("API-001", "API-010")
 @pytest.mark.bug_side("后端")
@@ -56,22 +58,33 @@ def test_created_role_can_be_queried(client, auth_headers, created_role):
 
 @pytest.mark.case_ids("API-078", "API-079", "API-080")
 @pytest.mark.bug_side("后端")
-def test_created_menu_appears_in_tree(client, auth_headers, created_menu):
-    response = client.get("/api/v1/admin/menus/tree", headers=auth_headers, params={"include_disabled": True})
-    response.raise_for_status()
-    payload = response.json()
+def test_created_menu_appears_in_tree(client, auth_headers):
+    tree = create_three_level_menu_tree(client, auth_headers)
+    try:
+        response = client.get("/api/v1/admin/menus/tree", headers=auth_headers, params={"include_disabled": True})
+        response.raise_for_status()
+        payload = response.json()
 
-    assert payload["code"] == 0
+        assert payload["code"] == 0
 
-    def walk(nodes):
-        for node in nodes:
-            if node["id"] == created_menu["id"]:
-                return node
-            found = walk(node.get("children", []))
-            if found:
-                return found
-        return None
+        def walk(nodes):
+            for node in nodes:
+                yield node
+                yield from walk(node.get("children", []))
 
-    found = walk(payload["data"])
-    assert found is not None
-    assert found["permission"] == created_menu["permission"]
+        flattened = list(walk(payload["data"]))
+        flattened_ids = {node["id"] for node in flattened}
+
+        assert tree["root"]["id"] in flattened_ids
+        assert tree["menu"]["id"] in flattened_ids
+        assert tree["button"]["id"] in flattened_ids
+
+        root_node = next(node for node in flattened if node["id"] == tree["root"]["id"])
+        menu_node = next(node for node in flattened if node["id"] == tree["menu"]["id"])
+        button_node = next(node for node in flattened if node["id"] == tree["button"]["id"])
+
+        assert menu_node["parent_id"] == root_node["id"]
+        assert button_node["parent_id"] == menu_node["id"]
+    finally:
+        for node in reversed(tree["all_nodes"]):
+            delete_menu_if_possible(client, auth_headers, node["id"])

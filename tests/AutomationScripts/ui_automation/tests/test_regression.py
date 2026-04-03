@@ -39,10 +39,10 @@ def test_user_management_filter_controls_exist(admin_logged_in_page):
     users_page = UserManagementPage(admin_logged_in_page)
     users_page.wait_until_loaded()
 
-    expect(users_page.page.get_by_text("所属组织")).to_be_visible()
-    expect(users_page.page.get_by_text("用户类型")).to_be_visible()
-    expect(users_page.page.get_by_text("角色")).to_be_visible()
-    expect(users_page.page.get_by_text("状态")).to_be_visible()
+    expect(users_page.page.get_by_text("所属组织", exact=True).first).to_be_visible()
+    expect(users_page.page.get_by_text("用户类型", exact=True).first).to_be_visible()
+    expect(users_page.page.get_by_text("角色", exact=True).first).to_be_visible()
+    expect(users_page.page.get_by_text("状态", exact=True).first).to_be_visible()
 
 
 @pytest.mark.case_ids("FUNC-019", "FUNC-020")
@@ -283,7 +283,7 @@ def test_audit_log_page_shows_records_and_has_no_edit_delete(admin_logged_in_pag
 
     audit_page = AuditLogPage(page)
     audit_page.wait_until_loaded()
-    audit_page.page.get_by_text("登录").first.wait_for()
+    audit_page.page.locator("tbody").get_by_text("登录", exact=True).first.wait_for()
     audit_page.expect_no_edit_or_delete_entry()
 
 

@@ -2,7 +2,14 @@ from __future__ import annotations
 
 import pytest
 
-from test_data import create_menu, delete_menu_if_possible
+from test_data import (
+    assign_role_permissions,
+    create_menu,
+    create_role_with_bound_users,
+    delete_menu_if_possible,
+    delete_role_if_possible,
+    disable_user,
+)
 
 
 @pytest.mark.case_ids("API-023")
@@ -121,6 +128,27 @@ def test_query_nonexistent_role_returns_not_found(client, auth_headers):
     assert payload["code"] == 1004
 
 
+@pytest.mark.case_ids("API-057A", "API-057B")
+@pytest.mark.bug_side("后端")
+def test_role_detail_returns_user_status_counts(client, auth_headers):
+    scenario = create_role_with_bound_users(client, auth_headers, active_count=1, disabled_count=1)
+    try:
+        response = client.get(f"/api/v1/admin/roles/{scenario['role']['id']}", headers=auth_headers)
+        response.raise_for_status()
+        payload = response.json()
+
+        assert payload["code"] == 0
+        assert payload["data"]["user_count"] == 2
+        assert payload["data"]["active_user_count"] == 1
+        assert payload["data"]["disabled_user_count"] == 1
+    finally:
+        for user in scenario["active_users"]:
+            disable_user(client, auth_headers, user["id"])
+        for user in scenario["disabled_users"]:
+            disable_user(client, auth_headers, user["id"])
+        delete_role_if_possible(client, auth_headers, scenario["role"]["id"])
+
+
 @pytest.mark.case_ids("API-060", "API-061")
 @pytest.mark.bug_side("后端")
 def test_create_role_duplicate_name_and_code_return_validation_error(client, auth_headers):
@@ -189,6 +217,19 @@ def test_new_role_permissions_default_to_empty_list(client, auth_headers, create
 
     assert payload["code"] == 0
     assert payload["data"]["permissions"] == []
+
+
+@pytest.mark.case_ids("API-074")
+@pytest.mark.bug_side("后端")
+def test_role_permissions_can_be_saved_and_read_back(client, auth_headers, created_role):
+    permissions = [
+        "admin:users:list",
+        "admin:users:create",
+    ]
+
+    result = assign_role_permissions(client, auth_headers, created_role["id"], permissions)
+
+    assert sorted(result["permissions"]) == sorted(permissions)
 
 
 @pytest.mark.case_ids("API-077", "API-078")

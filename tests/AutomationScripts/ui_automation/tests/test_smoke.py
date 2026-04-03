@@ -39,23 +39,23 @@ def test_backend_sidebar_navigation(admin_logged_in_page):
     page = admin_logged_in_page
 
     page.get_by_role("link", name="角色管理").click()
-    page.wait_for_url("**/roles")
+    page.wait_for_url("**/role")
     expect(page.get_by_role("heading", name="角色管理")).to_be_visible()
 
     page.get_by_role("link", name="权限配置").click()
-    page.wait_for_url("**/permissions")
+    page.wait_for_url("**/permission")
     expect(page.get_by_text("配置权限", exact=True).first).to_be_visible()
 
     page.get_by_role("link", name="菜单管理").click()
-    page.wait_for_url("**/menus")
+    page.wait_for_url("**/menu")
     expect(page.get_by_role("heading", name="菜单管理")).to_be_visible()
 
     page.get_by_role("link", name="审计日志").click()
-    page.wait_for_url("**/audit-log")
-    expect(page.get_by_placeholder("按对象 ID 查询（object_id）")).to_be_visible()
+    page.wait_for_url("**/audit")
+    expect(page.get_by_placeholder("搜索对象 ID（object_id）")).to_be_visible()
 
     page.get_by_role("link", name="用户管理").click()
-    page.wait_for_url("**/users")
+    page.wait_for_url("**/user")
     expect(page.get_by_role("heading", name="用户管理")).to_be_visible()
 
 
@@ -93,7 +93,7 @@ def test_permission_config_page_core_layout(admin_logged_in_page):
 @pytest.mark.bug_side("前端")
 def test_menu_management_page_core_layout(admin_logged_in_page, page_urls):
     page = admin_logged_in_page
-    page.goto(page_urls["menus"], wait_until="domcontentloaded")
+    page.goto(page_urls["menu"], wait_until="domcontentloaded")
 
     menu_page = MenuManagementPage(page)
     menu_page.wait_until_loaded()

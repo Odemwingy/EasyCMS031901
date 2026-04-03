@@ -20,7 +20,7 @@ class PermissionConfigPage:
         return self.page.get_by_role("button").filter(has_text="权限")
 
     def wait_until_loaded(self) -> None:
-        self.page.wait_for_url("**/permissions")
+        self.page.wait_for_url("**/permission")
         expect(self.title_text).to_be_visible()
 
     def assert_core_layout(self) -> None:

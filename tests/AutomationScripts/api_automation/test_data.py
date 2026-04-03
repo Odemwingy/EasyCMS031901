@@ -103,6 +103,28 @@ def create_role(
     return detail_body["data"]
 
 
+def assign_role_permissions(
+    client: httpx.Client,
+    headers: dict[str, str],
+    role_id: int,
+    permissions: list[str],
+) -> dict[str, Any]:
+    response = client.put(
+        f"/api/v1/admin/roles/{role_id}/permissions",
+        headers=headers,
+        json={"permissions": permissions},
+    )
+    response.raise_for_status()
+    body = response.json()
+    assert body["code"] == 0, body
+
+    detail_resp = client.get(f"/api/v1/admin/roles/{role_id}/permissions", headers=headers)
+    detail_resp.raise_for_status()
+    detail_body = detail_resp.json()
+    assert detail_body["code"] == 0, detail_body
+    return detail_body["data"]
+
+
 def delete_role_if_possible(client: httpx.Client, headers: dict[str, str], role_id: int) -> None:
     response = client.delete(f"/api/v1/admin/roles/{role_id}", headers=headers)
     if response.status_code >= 500:
@@ -253,3 +275,98 @@ def delete_menu_by_permission_if_possible(
     menu = find_menu_by_permission(client, headers, permission)
     if menu:
         delete_menu_if_possible(client, headers, menu["id"])
+
+
+def create_role_with_bound_users(
+    client: httpx.Client,
+    headers: dict[str, str],
+    *,
+    active_count: int = 1,
+    disabled_count: int = 1,
+    role_name_prefix: str = "scenario_role_name",
+    role_code_prefix: str = "scenario_role",
+) -> dict[str, Any]:
+    role = create_role(
+        client,
+        headers,
+        name_prefix=role_name_prefix,
+        code_prefix=role_code_prefix,
+        description="created by scenario builder",
+    )
+    active_users: list[dict[str, Any]] = []
+    disabled_users: list[dict[str, Any]] = []
+
+    for _ in range(active_count):
+        active_users.append(
+            create_user(
+                client,
+                headers,
+                role_ids=[role["id"]],
+                username_prefix="scenario_active_user",
+                name_prefix="scenario_active_user_name",
+                remark="created by scenario builder",
+            )
+        )
+
+    for _ in range(disabled_count):
+        user = create_user(
+            client,
+            headers,
+            role_ids=[role["id"]],
+            username_prefix="scenario_disabled_user",
+            name_prefix="scenario_disabled_user_name",
+            remark="created by scenario builder",
+        )
+        disable_user(client, headers, user["id"])
+        detail_resp = client.get(f"/api/v1/admin/users/{user['id']}", headers=headers)
+        detail_resp.raise_for_status()
+        detail_body = detail_resp.json()
+        assert detail_body["code"] == 0, detail_body
+        disabled_users.append(detail_body["data"])
+
+    return {
+        "role": role,
+        "active_users": active_users,
+        "disabled_users": disabled_users,
+    }
+
+
+def create_three_level_menu_tree(
+    client: httpx.Client,
+    headers: dict[str, str],
+    *,
+    name_prefix: str = "scenario_menu",
+    permission_prefix: str = "admin:scenario-menu",
+) -> dict[str, Any]:
+    suffix = unique_suffix()
+    root = create_menu(
+        client,
+        headers,
+        parent_id=None,
+        node_type=1,
+        name_prefix=f"{name_prefix}_root",
+        permission_prefix=f"{permission_prefix}:root:{suffix}",
+    )
+    menu = create_menu(
+        client,
+        headers,
+        parent_id=root["id"],
+        node_type=2,
+        name_prefix=f"{name_prefix}_menu",
+        permission_prefix=f"{permission_prefix}:menu:{suffix}",
+        route_path_prefix=f"/admin/{name_prefix}-{suffix}",
+    )
+    button = create_menu(
+        client,
+        headers,
+        parent_id=menu["id"],
+        node_type=3,
+        name_prefix=f"{name_prefix}_button",
+        permission_prefix=f"{permission_prefix}:button:{suffix}",
+    )
+    return {
+        "root": root,
+        "menu": menu,
+        "button": button,
+        "all_nodes": [root, menu, button],
+    }

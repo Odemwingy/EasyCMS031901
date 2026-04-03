@@ -32,7 +32,7 @@ class RoleManagementPage:
         return self.page.locator("[role='dialog']").filter(has=self.page.get_by_text("新建角色"))
 
     def wait_until_loaded(self) -> None:
-        self.page.wait_for_url("**/roles")
+        self.page.wait_for_url("**/role")
         expect(self.page_title).to_be_visible()
 
     def assert_core_layout(self) -> None:
@@ -47,7 +47,7 @@ class RoleManagementPage:
         self.page.wait_for_timeout(500)
 
     def expect_role_card_visible(self, role_name: str) -> None:
-        expect(self.page.get_by_text(role_name)).to_be_visible()
+        expect(self.page.get_by_role("link", name=role_name).first).to_be_visible()
 
     def expect_preset_tag_visible(self) -> None:
         expect(self.page.get_by_text("预置")).to_be_visible()

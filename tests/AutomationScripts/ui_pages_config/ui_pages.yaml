@@ -1,42 +1,42 @@
 environment:
   name: easycms-dev
-  ui_base_url: "http://192.168.18.79:8080"
+  ui_base_url: "http://192.168.18.79:8081"
   api_base_url: ""
 
 pages:
   login:
     path: "/login"
-    url: "http://192.168.18.79:8080/login"
+    url: "http://192.168.18.79:8081/login"
     description: "登录页"
-  users:
-    path: "/backend/users"
-    url: "http://192.168.18.79:8080/backend/users"
+  user:
+    path: "/backend/user"
+    url: "http://192.168.18.79:8081/backend/user"
     description: "用户管理页"
-  roles:
-    path: "/backend/roles"
-    url: "http://192.168.18.79:8080/backend/roles"
+  role:
+    path: "/backend/role"
+    url: "http://192.168.18.79:8081/backend/role"
     description: "角色管理页"
-  permissions:
-    path: "/backend/permissions"
-    url: "http://192.168.18.79:8080/backend/permissions"
+  permission:
+    path: "/backend/permission"
+    url: "http://192.168.18.79:8081/backend/permission"
     description: "权限配置页"
-  menus:
-    path: "/backend/menus"
-    url: "http://192.168.18.79:8080/backend/menus"
+  menu:
+    path: "/backend/menu"
+    url: "http://192.168.18.79:8081/backend/menu"
     description: "菜单管理页"
-  audit_log:
-    path: "/backend/audit-log"
-    url: "http://192.168.18.79:8080/backend/audit-log"
+  audit:
+    path: "/backend/audit"
+    url: "http://192.168.18.79:8081/backend/audit"
     description: "审计日志页"
   my-todo:
     path: "/workbench/my-todo"
-    url: "http://192.168.18.79:8080//workbench/my-todo"
+    url: "http://192.168.18.79:8081//workbench/my-todo"
     description: "工作台-我的待办页"
 navigation:
   default_landing_page: "my-todo"
   sidebar_order:
-    - users
-    - roles
-    - permissions
-    - menus
-    - audit_log
+    - user
+    - role
+    - permission
+    - menu
+    - audit

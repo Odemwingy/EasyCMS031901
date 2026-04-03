@@ -1,26 +1,23 @@
 # EasyCMS GitHub Issue Drafts
 
-以下内容已整理为更适合在 GitHub 上创建 issue 的样式。  
-每条 issue 都包含：
+以下内容用于沉淀自动化测试发现的产品缺陷草稿。
 
-- `Issue Title`
-- `Assignees`
-- `Labels`
-- `Description`
-- `Preconditions`
-- `Steps To Reproduce`
-- `Actual Result`
-- `Expected Result`
-- `Evidence`
-
-前端问题统一指派给 `Jinx962`，后端问题统一指派给 `LHB1994`，标签统一为 `bug`。
+- 每条 issue 标题必须带唯一编号，格式：`【001】`
+- `issue.md` 与 `buglist.md` 按编号一一对应
+- 后续只新增 issue，不删除原有 issue
+- 已确认修复的 issue 保留原文，并标注 `已修复`
+- 提交到 GitHub 时，只处理本次新增的 issue
+- 环境问题、脚本问题、待人工复核项不进入本文件
 
 ---
 
-## Issue 1
+<!-- ISSUE-START: 001 -->
+<!-- ISSUE-SIGNATURE: legacy-user-search-admin-500 -->
+<!-- ISSUE-STATUS: resolved -->
+## Issue 【001】
 
 ### Issue Title
-【后端】用户管理页按用户名搜索时触发服务器内部错误并清空列表
+【001】【用户管理模块】后端：用户管理页按用户名搜索时触发服务器内部错误并清空列表
 
 ### Assignees
 - `LHB1994`
@@ -29,8 +26,9 @@
 - `bug`
 
 ### Description
-在“后台管理 > 用户管理”页面，按用户名搜索已有用户 `admin` 时，页面右上角弹出红色提示“服务器内部错误”，同时用户列表区域变成“暂无数据”。  
-这会直接阻塞用户筛选、状态校验和分页相关验证，与测试用例 `FUNC-017`、`FUNC-018`、`FUNC-019`、`FUNC-020` 的预期不符。
+在“后台管理 > 用户管理”页面，按用户名搜索已有用户 `admin` 时，页面右上角弹出红色提示“服务器内部错误”，同时用户列表区域变成“暂无数据”。
+
+该问题会直接阻塞用户搜索、状态校验和分页相关验证，与测试用例 `FUNC-017`、`FUNC-018`、`FUNC-019`、`FUNC-020` 的预期不符。
 
 ### Preconditions
 - 使用系统管理员账号登录后台
@@ -40,7 +38,7 @@
 1. 登录系统。
 2. 进入“后台管理 > 用户管理”。
 3. 在搜索框“搜索用户名 / 姓名”中输入 `admin`。
-4. 观察页面右上角提示和列表返回结果。
+4. 观察页面提示和列表返回结果。
 
 ### Actual Result
 - 页面出现红色 Toast：“服务器内部错误”
@@ -56,12 +54,17 @@
 - 关联用例：`FUNC-017`、`FUNC-018`、`FUNC-019`、`FUNC-020`
 - 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_user_management_status_and_pagination_controls_chromium.png`
 
+<!-- ISSUE-END: 001 -->
+
 ---
 
-## Issue 2
+<!-- ISSUE-START: 002 -->
+<!-- ISSUE-SIGNATURE: legacy-auth-state-redirect-login -->
+<!-- ISSUE-STATUS: open -->
+## Issue 【002】
 
 ### Issue Title
-【前端】后台已登录状态下进入部分管理场景会被异常重定向回登录页
+【002】【认证模块】前端：已登录状态下进入部分后台管理场景会异常跳回登录页
 
 ### Assignees
 - `Jinx962`
@@ -70,9 +73,9 @@
 - `bug`
 
 ### Description
-系统登录成功后，在执行部分后台管理操作时，会从已登录状态异常跳回登录页，导致后续流程无法继续。  
-当前受影响场景包括：
+系统登录成功后，在执行部分后台管理操作时，会从已登录状态异常跳回登录页，导致后续流程无法继续。
 
+当前受影响场景包括：
 - 新建用户弹窗相关操作
 - 进入角色管理
 - 新建角色相关操作
@@ -88,10 +91,10 @@
 1. 登录后台系统。
 2. 保持登录状态不退出。
 3. 执行以下任一操作：
-   - 在用户管理页尝试点击“新建用户”
-   - 从左侧菜单进入“角色管理”
-   - 在角色管理页尝试进行新建角色相关操作
-   - 从左侧菜单进入“菜单管理”并尝试继续操作
+- 在用户管理页尝试点击“新建用户”
+- 从左侧菜单进入“角色管理”
+- 在角色管理页尝试进行新建角色相关操作
+- 从左侧菜单进入“菜单管理”并尝试继续操作
 4. 观察当前页面是否保持在后台模块内。
 
 ### Actual Result
@@ -111,12 +114,17 @@
 - 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_role_create_dialog_can_create_role_chromium.png`
 - 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_menu_create_dialog_can_create_root_directory_chromium.png`
 
+<!-- ISSUE-END: 002 -->
+
 ---
 
-## Issue 3
+<!-- ISSUE-START: 003 -->
+<!-- ISSUE-SIGNATURE: legacy-permission-groups-missing-menu-management -->
+<!-- ISSUE-STATUS: open -->
+## Issue 【003】
 
 ### Issue Title
-【前端】权限配置页未完整展示“菜单管理”权限分组
+【003】【权限配置模块】前端：权限配置页未完整展示“菜单管理”权限分组
 
 ### Assignees
 - `Jinx962`
@@ -125,7 +133,8 @@
 - `bug`
 
 ### Description
-在“后台管理 > 权限配置”页面，首屏可见“用户管理”“角色管理”“权限配置”等权限分组，但未看到“菜单管理”分组。  
+在“后台管理 > 权限配置”页面，首屏可见“用户管理”“角色管理”“权限配置”等权限分组，但未看到“菜单管理”分组。
+
 根据测试用例 `FUNC-059`、`FUNC-060`，管理员应能在该页面查看后台管理相关权限分组，以完成权限核对和配置。
 
 ### Preconditions
@@ -150,12 +159,17 @@
 - 关联用例：`FUNC-059`、`FUNC-060`
 - 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_permission_config_displays_backend_permission_groups_chromium.png`
 
+<!-- ISSUE-END: 003 -->
+
 ---
 
-## Issue 4
+<!-- ISSUE-START: 004 -->
+<!-- ISSUE-SIGNATURE: legacy-menu-fieldErrors-not-defined -->
+<!-- ISSUE-STATUS: open -->
+## Issue 【004】
 
 ### Issue Title
-【前端】菜单管理页点击新建或编辑后触发运行时异常 fieldErrors is not defined
+【004】【菜单管理模块】前端：菜单管理页点击新建或编辑后触发运行时异常 `fieldErrors is not defined`
 
 ### Assignees
 - `Jinx962`
@@ -164,7 +178,8 @@
 - `bug`
 
 ### Description
-在“后台管理 > 菜单管理”页面，点击“新建根节点”或编辑图标后，没有出现预期的“新建菜单节点 / 编辑菜单节点”弹窗，而是直接进入 React 错误页。  
+在“后台管理 > 菜单管理”页面，点击“新建根节点”或编辑图标后，没有出现预期的“新建菜单节点 / 编辑菜单节点”弹窗，而是直接进入 React 错误页。
+
 错误页提示：
 
 `Unexpected Application Error!`
@@ -181,8 +196,8 @@
 1. 登录系统。
 2. 进入“后台管理 > 菜单管理”。
 3. 执行以下任一操作：
-   - 点击右上角“新建根节点”
-   - 点击菜单节点行中的编辑图标
+- 点击右上角“新建根节点”
+- 点击菜单节点行中的编辑图标
 4. 观察页面行为。
 
 ### Actual Result
@@ -202,12 +217,17 @@
 - 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_menu_create_dialog_requires_route_and_component_for_menu_item_chromium.png`
 - 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_menu_edit_dialog_shows_readonly_permission_and_type_hint_chromium.png`
 
+<!-- ISSUE-END: 004 -->
+
 ---
 
-## Issue 5
+<!-- ISSUE-START: 005 -->
+<!-- ISSUE-SIGNATURE: legacy-api-create-role-500-block-user-create -->
+<!-- ISSUE-STATUS: open -->
+## Issue 【005】
 
 ### Issue Title
-【后端】创建测试角色时 /api/v1/admin/roles 返回 500，阻塞新建用户流程
+【005】【角色管理模块】后端：创建测试角色时 `/api/v1/admin/roles` 返回 500，阻塞新建用户流程
 
 ### Assignees
 - `LHB1994`
@@ -216,8 +236,8 @@
 - `bug`
 
 ### Description
-在执行“新建内部员工用户成功”场景时，需要先通过角色创建接口准备可分配角色。  
-当前 `/api/v1/admin/roles` 接口返回 `500 Internal Server Error`，导致后续“新建用户”流程无法继续进行。  
+在执行“新建内部员工用户成功”场景时，需要先通过角色创建接口准备可分配角色。当前 `/api/v1/admin/roles` 接口返回 `500 Internal Server Error`，导致后续“新建用户”流程无法继续进行。
+
 这会直接阻塞测试用例 `FUNC-021` 的自动化和联调验证。
 
 ### Preconditions
@@ -241,14 +261,69 @@
 - 关联用例：`FUNC-021`
 - 截图地址：`./ui_automation/outputs/regression/screenshots/tests_test_regression.py_test_user_create_dialog_can_create_internal_user_chromium.png`
 
+<!-- ISSUE-END: 005 -->
+
 ---
 
 ## 备注
 
-以下回归失败项当前更像“自动化定位冲突 / 断言口径问题 / 需人工复核”，本次没有转成 GitHub issue：
+环境问题、脚本问题和待人工复核项统一记录在每次执行产物下的 `non_product_issues.md`，不进入本文件，不进入 GitHub issue。
 
-- 用户管理筛选器文本重复导致定位冲突
-- 菜单管理页“后台管理”文本多处重名导致节点断言冲突
-- 审计日志页“删除”是日志动作文本，不一定等于页面存在删除按钮
+---
 
-如需，我可以下一步再把这些内容单独整理成“待人工复核列表”。
+<!-- ISSUE-START: 006 -->
+<!-- ISSUE-SIGNATURE: api-role-permissions-readback-missing-admin-users-list -->
+<!-- ISSUE-STATUS: open -->
+## Issue 【006】
+### Issue Title
+【006】【角色权限模块】后端：角色权限全量保存后回读缺失 `admin:users:list`
+
+### Assignees
+- `LHB1994`
+
+### Labels
+- `bug`
+
+### Description
+在角色权限配置接口中提交 `["admin:users:list", "admin:users:create"]` 后，接口返回保存成功，但再次查询角色权限时仅返回 `admin:users:create`，缺少 `admin:users:list`。
+
+该问题与接口测试用例 `API-074` 的预期不符。根据接口文档，角色权限更新接口应采用全量替换语义，保存后再次查询的结果应与提交内容完全一致。
+
+### Preconditions
+- 使用具备 `admin:roles:assign-permissions` 权限的管理员账号
+- 系统中存在一个可操作的普通角色
+
+### Steps To Reproduce
+1. 创建一个新角色
+2. 调用 `PUT /api/v1/admin/roles/{id}/permissions`
+3. 请求体传入：
+
+```json
+{
+  "permissions": ["admin:users:list", "admin:users:create"]
+}
+```
+
+4. 再调用 `GET /api/v1/admin/roles/{id}/permissions`
+
+### Actual Result
+- 权限保存接口返回成功
+- 再次查询仅返回 `admin:users:create`
+- `admin:users:list` 未被持久化或未被正确回读
+
+### Expected Result
+- 再次查询结果应与提交内容完全一致
+- 应同时返回 `admin:users:list` 和 `admin:users:create`
+
+### Evidence
+- 关联用例：`API-074`
+- 证据：无截图
+- 代码位置：`tests/AutomationScripts/api_automation/tests/test_regression.py::test_role_permissions_can_be_saved_and_read_back`
+- 当前回归缺陷清单：`tests/AutomationScripts/api_automation/outputs/regression/buglist.md`
+
+### Resolution Status
+- 状态：`已修复`
+- 回归时间：`2026-04-02`
+- 回归结果：重新执行 `python -m pytest tests/AutomationScripts/api_automation/tests/test_regression.py -k test_role_permissions_can_be_saved_and_read_back -q`，结果 `1 passed`
+
+<!-- ISSUE-END: 006 -->

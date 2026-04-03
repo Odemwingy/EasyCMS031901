@@ -36,7 +36,7 @@ class UserManagementPage:
         return self.page.locator("[role='dialog']").filter(has=self.page.get_by_text("新建用户"))
 
     def wait_until_loaded(self) -> None:
-        self.page.wait_for_url("**/users")
+        self.page.wait_for_url("**/user")
         expect(self.page_title).to_be_visible()
         expect(self.search_input).to_be_visible()
 
@@ -67,7 +67,7 @@ class UserManagementPage:
         expect(self.page.get_by_text(username)).to_be_visible()
 
     def first_status_tag(self) -> Locator:
-        return self.page.get_by_text("启用").first
+        return self.page.locator("tbody").get_by_text("启用", exact=True).first
 
     def row_for_user(self, username: str) -> Locator:
         return self.page.locator("tr").filter(has=self.page.get_by_text(username))

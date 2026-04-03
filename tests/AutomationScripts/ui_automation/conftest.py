@@ -37,11 +37,11 @@ def env_config() -> dict:
 def page_urls() -> dict:
     return {
         "login": get_page_url("login"),
-        "users": get_page_url("users"),
-        "roles": get_page_url("roles"),
-        "permissions": get_page_url("permissions"),
-        "menus": get_page_url("menus"),
-        "audit_log": get_page_url("audit_log"),
+        "user": get_page_url("user"),
+        "role": get_page_url("role"),
+        "permission": get_page_url("permission"),
+        "menu": get_page_url("menu"),
+        "audit": get_page_url("audit"),
     }
 
 
@@ -114,8 +114,8 @@ def admin_logged_in_page(page, page_urls, admin_api_session):
         }})()
         """
     )
-    page.goto(page_urls["users"], wait_until="domcontentloaded")
-    page.wait_for_url("**/users")
+    page.goto(page_urls["user"], wait_until="domcontentloaded")
+    page.wait_for_url("**/user")
     return page
 
 

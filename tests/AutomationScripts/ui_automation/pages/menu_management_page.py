@@ -24,7 +24,7 @@ class MenuManagementPage:
         return self.page.locator("[role='dialog']").filter(has=self.page.get_by_text("编辑菜单节点"))
 
     def wait_until_loaded(self) -> None:
-        self.page.wait_for_url("**/menus")
+        self.page.wait_for_url("**/menu")
         expect(self.page_title).to_be_visible()
 
     def assert_core_layout(self) -> None:
@@ -35,7 +35,7 @@ class MenuManagementPage:
         expect(self.page.get_by_text("操作")).to_be_visible()
 
     def expect_node_visible(self, node_name: str) -> None:
-        expect(self.page.get_by_text(node_name)).to_be_visible()
+        expect(self.page.locator("tbody").get_by_text(node_name, exact=True).first).to_be_visible()
 
     def expect_no_expand_all_button(self) -> None:
         expect(self.page.get_by_role("button", name="展开全部")).to_have_count(0)

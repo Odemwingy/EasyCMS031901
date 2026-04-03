@@ -2,7 +2,7 @@
 
 - 生成日期：2026-03-27
 - 覆盖说明：覆盖通用协议、认证鉴权、用户管理、角色管理、菜单权限与审计日志接口。
-- 用例总数：97
+- 用例总数：99
 
 ## 依据文档
 
@@ -44,7 +44,7 @@
 | 审计日志 | 6 |
 | 用户管理 | 26 |
 | 菜单与权限 | 20 |
-| 角色管理 | 17 |
+| 角色管理 | 19 |
 | 认证与会话 | 19 |
 | 通用规则 | 9 |
 
@@ -121,7 +121,9 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | API-055 | /api/v1/admin/roles | GET | P0 | 正向 | 角色列表默认分页查询成功 | 具备 admin:roles:list 权限 | 1. 调用角色列表接口<br>2. 检查系统预置标识、绑定用户数 | page=1&per_page=20 | 返回 list；包含 is_system_preset、user_count、status_label 等字段。 | 接口文档 §13 角色列表；PRD §3.3.2 |
 | API-056 | /api/v1/admin/roles | GET | P1 | 筛选 | 角色列表支持关键字与状态筛选 | 存在多种角色数据 | 1. 传 keyword/status<br>2. 校验结果 | keyword=管理员&status=1 | 只返回满足关键字和状态的角色。 | 接口文档 §13 角色列表；PRD §3.3.2 |
-| API-057 | /api/v1/admin/roles/{id} | GET | P0 | 正向 | 角色详情查询成功 | 存在目标角色 | 1. 调用角色详情接口<br>2. 检查字段 | id=1 | 返回名称、编码、描述、状态、是否预置、绑定用户数等。 | 接口文档 §14 角色详情 |
+| API-057 | /api/v1/admin/roles/{id} | GET | P0 | 正向 | 角色详情查询成功并返回扩展统计字段 | 存在目标角色 | 1. 调用角色详情接口<br>2. 检查基础字段与统计字段 | id=1 | 返回名称、编码、描述、状态、是否预置、`user_count`、`active_user_count`、`disabled_user_count` 等字段。 | 接口文档 §14 角色详情；需求差异 DIFF_role_detail_user_status_counts §3 |
+| API-057A | /api/v1/admin/roles/{id} | GET | P0 | 口径 | 启用与停用用户统计字段按状态精确计数 | 目标角色已绑定启用、停用、锁定、未激活四类用户 | 1. 调用角色详情接口<br>2. 分别核对 `active_user_count` 与 `disabled_user_count`<br>3. 对照绑定用户状态分布 | id=role_detail_stats_id | `active_user_count` 仅统计 `status=1`；`disabled_user_count` 仅统计 `status=2`；`status=3/4` 不计入这两个新增字段。 | 需求差异 DIFF_role_detail_user_status_counts §3/§6；接口文档 §14 角色详情 |
+| API-057B | /api/v1/admin/roles/{id} | GET | P0 | 回归 | 新增状态统计字段后 user_count 原口径保持不变 | 目标角色已绑定多种状态用户 | 1. 调用角色详情接口<br>2. 核对 `user_count`<br>3. 与角色实际绑定用户总数比对 | id=role_detail_stats_id | `user_count` 仍等于角色绑定用户总数，不因新增 `active_user_count`、`disabled_user_count` 而改变口径。 | 需求差异 DIFF_role_detail_user_status_counts §3/§6；接口文档 §14 角色详情 |
 | API-058 | /api/v1/admin/roles/{id} | GET | P1 | 异常 | 不存在角色返回 1004 | 无 | 1. 查询不存在角色 id<br>2. 检查响应 | id=999999 | 返回 1004。 | 接口文档-公共错误码；接口文档 §14 角色详情 |
 | API-059 | /api/v1/admin/roles | POST | P0 | 正向 | 新建角色成功 | 具备 admin:roles:create 权限 | 1. 提交合法角色名称、编码、状态<br>2. 检查返回 | {"name":"内容审核员","code":"content_reviewer","description":"负责内容技术审核","status":1} | 返回“角色创建成功”；数据入库。 | 接口文档 §15 新建角色；PRD §3.3.3 |
 | API-060 | /api/v1/admin/roles | POST | P0 | 校验 | 角色名称重复时阻止保存 | 已存在同名角色 | 1. 使用重复 name 创建角色<br>2. 检查响应 | {"name":"系统管理员","code":"system_admin_copy","status":1} | 返回 1001，message 为“角色名称已存在”。 | 接口文档 §15 新建角色；PRD §3.3.3 |
