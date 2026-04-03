@@ -162,6 +162,7 @@ Accept: application/vnd.github+json
 2. 对需跟进的条目用 **§3** 读详情。
 3. 修复完成后：按团队规范 **§4** 更新标签并/或 `close`；需要继续跟踪则只改标签、保持 `open`。
 4. 新缺陷/任务用 **§5** 创建，并在 `progress/` 或 PR 描述中引用 Issue 编号（如 `#42`）。
+5. **代码合入**：按仓库根目录 **`rule.md` §6（Git 分支与 Pull Request）** — 尽量 **一 issue 一分支一 PR**；多 issue 同批解决时 **同一分支同一 PR**，并在 PR 中**逐项列出全部 issue 编号**。
 
 ---
 
